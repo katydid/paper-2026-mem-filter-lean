@@ -62,9 +62,9 @@ theorem Grammar.JSONmembers.decreasing_symbol {α: Type} {σ: Type} [SizeOf σ] 
     (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
     (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
     (x, r1)
-    (Hedge.Node.mk label children, r2) := by
+    (Hedge.Node.node label children, r2) := by
   apply Prod.Lex.left
-  simp +arith only [Hedge.Node.mk.sizeOf_spec]
+  simp +arith only [Hedge.Node.node.sizeOf_spec]
   have h' := List.elem_lt h
   omega
 

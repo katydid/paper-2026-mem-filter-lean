@@ -168,7 +168,7 @@ theorem Grammar.Katydid.derive_denote_symbol_is_onlyif {α: Type} (G: Grammar n 
     (Rule.denote G Φ
       (Regex.symbol (pred, ref))
     )
-    (Node.mk label children)
+    (Node.node label children)
   =
     Lang.onlyif
       (Φ pred label ∧ Rule.denote G Φ (G.lookup ref) children)

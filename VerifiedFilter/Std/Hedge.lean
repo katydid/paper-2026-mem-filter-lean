@@ -6,7 +6,7 @@ import Lean.Elab.Tactic
 import VerifiedFilter.Std.List
 
 inductive Hedge.Node (α: Type) where
-  | mk (label: α) (children: List (Hedge.Node α))
+  | node (label: α) (children: List (Hedge.Node α))
   deriving BEq, Ord, Repr, Hashable
 
 abbrev Hedge α := List (Hedge.Node α)
@@ -15,14 +15,14 @@ namespace Hedge
 
 def Node.getLabel (t: Node α): α :=
   match t with
-  | Node.mk l _ => l
+  | Node.node l _ => l
 
 def Node.getChildren (t: Node α): Hedge α :=
   match t with
-  | Node.mk _ c => c
+  | Node.node _ c => c
 
 def node {α: Type} (label: α) (children: Hedge α): Hedge.Node α :=
-  Hedge.Node.mk label children
+  Hedge.Node.node label children
 
 example: Hedge String := [
   node "html" [
@@ -69,17 +69,17 @@ example: Hedge (Option String) := [
 
 mutual
 def Node.hasDecEq [DecidableEq α]: (a b : Node α) → Decidable (Eq a b)
-  | Node.mk la as, Node.mk lb bs =>
+  | Node.node la as, Node.node lb bs =>
     match decEq la lb with
     | isFalse nlab => isFalse (by
-        simp only [Node.mk.injEq, not_and]
+        simp only [Node.node.injEq, not_and]
         intro h
         contradiction
       )
     | isTrue hlab =>
       match Node.hasDecEqs as bs with
       | isFalse nabs => isFalse (by
-          simp only [Node.mk.injEq, not_and]
+          simp only [Node.node.injEq, not_and]
           intro _ hab
           contradiction
         )
@@ -118,7 +118,7 @@ instance[DecidableEq α] : DecidableEq (Node α) := Node.hasDecEq
 
 local elab "simp_sizeOf" : tactic => do
   Lean.Elab.Tactic.evalTactic (<- `(tactic|
-    simp only [Node.mk.sizeOf_spec, List.cons.sizeOf_spec, List.nil.sizeOf_spec, Subtype.mk.sizeOf_spec])
+    simp only [Node.node.sizeOf_spec, List.cons.sizeOf_spec, List.nil.sizeOf_spec, Subtype.mk.sizeOf_spec])
   )
 
 private theorem lt_plus (x y z: Nat):
@@ -182,8 +182,8 @@ theorem sizeOf_drop (n: Nat) (xs: Hedge α):
     apply List.sizeOf_cons
 
 private theorem Node.sizeOf_lt_cons_child {α: Type} (label: α) (x1: Hedge.Node α) (x2: Hedge.Node α) (xs: Hedge α):
-  sizeOf x1 < sizeOf (Hedge.Node.mk label xs)
-  → sizeOf x1 < sizeOf (Hedge.Node.mk label (x2 :: xs)) := by
+  sizeOf x1 < sizeOf (Hedge.Node.node label xs)
+  → sizeOf x1 < sizeOf (Hedge.Node.node label (x2 :: xs)) := by
   simp
   intro h
   omega
@@ -194,7 +194,7 @@ theorem Node.sizeOf_children
   {label : α}
   {children : List (Node α)}
   (h : child ∈ children)
-  : sizeOf child < sizeOf (Hedge.Node.mk label children) := by
+  : sizeOf child < sizeOf (Hedge.Node.node label children) := by
   induction children with
   | nil =>
     simp at h

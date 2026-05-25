@@ -63,9 +63,9 @@ theorem decreasing_symbol {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (x
     ([x], r2) := by
   apply Prod.Lex.left
   cases x with
-  | mk label children =>
+  | node label children =>
   simp only [Hedge.Node.getChildren]
-  simp only [List.cons.sizeOf_spec, Hedge.Node.mk.sizeOf_spec, sizeOf_default, Nat.add_zero,
+  simp only [List.cons.sizeOf_spec, Hedge.Node.node.sizeOf_spec, sizeOf_default, Nat.add_zero,
     List.nil.sizeOf_spec]
   omega
 
@@ -264,7 +264,7 @@ theorem denote_symbol {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α →
       rw [Rule.denote]
       simp only [List.cons.injEq, and_true, decide_eq_true_eq]
       cases x with
-      | mk label children =>
+      | node label children =>
       obtain ⟨labelPred, ref⟩ := s
       simp only
       simp only [eq_iff_iff]
@@ -277,7 +277,7 @@ theorem denote_symbol {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α →
       case mpr =>
         intro h
         obtain ⟨label', children', h1, h2⟩ := h
-        simp only [Hedge.Node.mk.injEq] at h1
+        simp only [Hedge.Node.node.injEq] at h1
         obtain ⟨h1a, h1b⟩ := h1
         subst h1a
         subst h1b

@@ -10,14 +10,14 @@ namespace Lang
 def node_match {α: Type} (φ: α → Bool) (R: Lang (Hedge.Node α)): Lang (Hedge.Node α) :=
   fun xs =>
     match xs with
-    | [Hedge.Node.mk label children] =>
+    | [Hedge.Node.node label children] =>
       φ label /\ R children
     | _ => False
 
 -- The denotation of node that we would have liked to use, if match was not required for termination proof purposes.
 -- Luckily we still get to use this definition in a lot of proofs.
 def node {α: Type} (φ: α → Bool) (R: Lang (Hedge.Node α)): Lang (Hedge.Node α) :=
-  fun xs => ∃ label children, xs = [Hedge.Node.mk label children] /\ φ label /\ R children
+  fun xs => ∃ label children, xs = [Hedge.Node.node label children] /\ φ label /\ R children
 
 -- We show that the two definitions of denotation of node is equivalent.
 theorem node_is_node_match:
@@ -33,8 +33,8 @@ theorem node_is_node_match:
     | nil =>
       simp only [List.cons.injEq, and_true, eq_iff_iff]
       cases x with
-      | mk label children =>
-      simp only [Hedge.Node.mk.injEq]
+      | node label children =>
+      simp only [Hedge.Node.node.injEq]
       apply Iff.intro
       case mp =>
         intro h
@@ -59,14 +59,14 @@ theorem null_node {α: Type} {p: α → Bool} {children: Lang (Hedge.Node α)}:
   rw [null_iff_node]
 
 theorem derive_iff_node {α: Type} {p: α → Bool} {childlang: Lang (Hedge.Node α)} {label: α} {children: Hedge α} {xs: Hedge α}:
-  (Lang.derive (node p childlang) (Hedge.Node.mk label children)) xs <->
+  (Lang.derive (node p childlang) (Hedge.Node.node label children)) xs <->
   (Lang.onlyif (p label /\ childlang children) Lang.emptystr) xs := by
   simp only [Lang.derive]
   simp only [Lang.onlyif, Lang.emptystr]
   refine Iff.intro ?toFun ?invFun
   case toFun =>
     unfold node
-    simp only [List.cons.injEq, Hedge.Node.mk.injEq]
+    simp only [List.cons.injEq, Hedge.Node.node.injEq]
     intro ⟨ label', children', ⟨ ⟨ hlabel', hchildren' ⟩, hxs ⟩ , hif ⟩
     subst_vars
     simp only [and_true]
@@ -81,7 +81,7 @@ theorem derive_iff_node {α: Type} {p: α → Bool} {childlang: Lang (Hedge.Node
     exact hif
 
 theorem derive_node {α: Type} {p: α → Bool} {childlang: Lang (Hedge.Node α)} {label: α} {children: Hedge α}:
-  (Lang.derive (node p childlang) (Hedge.Node.mk label children)) =
+  (Lang.derive (node p childlang) (Hedge.Node.node label children)) =
   (Lang.onlyif (p label /\ childlang children) Lang.emptystr) := by
   funext
   rw [derive_iff_node]

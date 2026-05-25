@@ -47,7 +47,7 @@ def Grammar.Memoize.derive' [DecidableEq φ] [Hashable φ] [Monad m] [MemoizeKat
   let nodePred: (param: φ × Ref n) → m {b: Bool // b = pureNodePred G Φ node.val param } :=
     (fun ((labelPred, ref): (φ × Ref n)) =>
       match hnode: node with
-      | Subtype.mk (Hedge.Node.mk label children) hhnode =>
+      | Subtype.mk (Hedge.Node.node label children) hhnode =>
       let childr := if Φ labelPred label then G.lookup ref else Regex.emptyset
       List.foldlMemoizeWithMembership (Grammar.Katydid.derive G Φ) children (Grammar.Memoize.derive' G Φ (children := children)) childr >>=
         fun dr =>

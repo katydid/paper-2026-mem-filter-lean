@@ -72,9 +72,9 @@ partial def fusedDerive [DecidableEq φ] [Hashable φ] [FusedKatydid m (φ × Re
   if Vector.all rs Regex.unescapable then Parser.skip; return rs
   match <- Parser.next with
   | Hint.field =>
-    let enters <- MemoizeKatydids.entersM ⟨l, rs⟩
+    let ⟨enters, _⟩ <- MemoizeKatydids.entersM ⟨l, rs⟩
     let token <- Parser.token
-    let childrs := Vector.map (xs := enters.1)
+    let childrs := Vector.map (xs := enters)
       (fun ⟨pred, ref⟩ => if Φ pred token then G.lookup ref else Regex.emptyset)
     let dchildrs <- match <- Parser.next with
       | Hint.value => deriveValue G Φ childrs

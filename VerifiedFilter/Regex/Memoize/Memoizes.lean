@@ -35,16 +35,10 @@ def derives [Monad m] [DecidableEq σ] [Hashable σ] [MemoizeKatydids m σ]
   pure (Subtype.mk res h)
 
 def validates [Monad m] [DecidableEq σ] [Hashable σ] [MemoizeKatydids m σ]
-  (Φ: σ → α → Bool) (r: Regex σ) (xs: List α): m { b: Bool // b = Regex.Katydid.validate Φ r xs } := do
+  (Φ: σ → α → Bool) (r: Regex σ) (xs: List α): m Bool := do
   let dr <- (List.foldlMemoize (fun dr x => Regex.Katydid.derives (flip Φ x) dr) (fun dr x => Regex.Memoize.derives (flip Φ x) dr) #v[r] xs)
-  pure (Subtype.mk (Regex.null dr.val.head) (by
-    obtain ⟨dr, hdr⟩ := dr
-    simp only
-    rw [hdr]
-    unfold Katydid.validate
-    sorry
-  ))
+  return Regex.null dr.val.head
 
 def filters  [Monad m] [DecidableEq σ] [Hashable σ] [MemoizeKatydids m σ]
-  (Φ: σ → α → Bool) (r: Regex σ) (xss: List (List α)): m { res: (List (List α)) // res = List.filter (Katydid.validate Φ r) xss } :=
-  List.filterMemoize (Katydid.validate Φ r) (Regex.Memoize.validates Φ r) xss
+  (Φ: σ → α → Bool) (r: Regex σ) (xss: List (List α)): m (List (List α)) :=
+  List.filterM (Regex.Memoize.validates Φ r) xss

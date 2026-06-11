@@ -22,3 +22,6 @@ abbrev RegexID.cast_assoc (r: RegexID (n + symcount r1 + symcount r2)): RegexID 
 
 def RegexID.casts (rs: Vector (RegexID n) l) (h: n = m): Vector (RegexID m) l :=
   Vector.map (fun r => RegexID.cast r h) rs
+
+def RegexID.castLE {n: Nat} (r: RegexID n) (h : n ≤ m): RegexID m :=
+  Regex.map r (fun s => (Fin.castLE h s))

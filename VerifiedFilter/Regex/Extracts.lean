@@ -1,6 +1,7 @@
 import VerifiedFilter.Regex.Regex
 import VerifiedFilter.Regex.SymCounts
 import VerifiedFilter.Regex.Extract
+import VerifiedFilter.Std.Vector
 
 namespace Regex
 
@@ -8,20 +9,40 @@ def extractsAcc (rs: Vector (Regex σ) l) (acc: Vector σ lacc):
   (Vector (Regex (Fin (lacc + symcounts rs))) l) × (Vector σ (lacc + symcounts rs)) :=
   match l with
   | 0 =>
-    ( #v[], Vector.cast (xs := acc) (by sorry) )
+    ( #v[], Vector.cast (xs := acc) (by
+      cases rs with
+      | mk a h =>
+      cases a with
+      | mk a' =>
+      simp at h
+      simp [h]
+      simp [symcounts]
+    ) )
   | l' + 1 =>
-    let r1 := Vector.back rs
-    let rs' := Vector.pop rs
-    let (regexid, acc1) := extractAcc r1 acc
-    let (regexids, accs) := extractsAcc rs' acc1
-    let regexid': Regex (Fin (lacc + symcounts rs)) :=
-      RegexID.cast (RegexID.cast_add (symcounts rs) regexid) (by sorry)
+    let (regexid1, acc1) := extractAcc (Vector.back rs) acc
+    let regexid1': Regex (Fin (lacc + symcounts rs)) :=
+      RegexID.castLE (m := lacc + symcounts rs) regexid1 (by
+        rw [symcounts_add1]
+        omega
+      )
+
+    let (regexids, accs) := extractsAcc (Vector.pop rs) acc1
     let regexesids' : Vector (Regex (Fin (lacc + symcounts rs))) l' :=
-      RegexID.casts regexids (by sorry)
+      RegexID.casts regexids (by
+        rw [symcounts_add1]
+        ac_rfl
+      )
+
     let regexidcons: Vector (Regex (Fin (lacc + symcounts rs))) (l' + 1) :=
-      Vector.cast (xs := Vector.push regexesids' regexid') (by sorry)
+      Vector.cast (xs := Vector.push regexesids' regexid1') (by
+        simp only
+      )
+
     let accs' : Vector σ (lacc + symcounts rs) :=
-      Vector.cast (xs := accs) (by sorry)
+      Vector.cast (xs := accs) (by
+        rw [symcounts_add1]
+        ac_rfl
+      )
     (regexidcons, accs')
 
 def extracts (xs: Vector (Regex σ) nregex):

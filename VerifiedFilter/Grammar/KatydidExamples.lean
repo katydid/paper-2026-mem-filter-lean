@@ -160,7 +160,7 @@ private def example_grammar_doc65: Grammar 3 String :=
 
 -- even more modified version of example from Taxonomy of XML Section 6.5
 
-namespace example_grammar_doc
+namespace tests
 
 open Pred.AnyEq
 
@@ -187,8 +187,6 @@ def example_grammar_doc: Grammar 3 (Pred String) :=
 #guard validate example_grammar_doc Pred.evalb
   [node "doc" [node "p" [node "pcdata" []], node "p" [node "br" []], node "p" [node "pcdata" []]]]
   = true
-
-end example_grammar_doc
 
 -- modified example from Taxonomy of XML Section 7.1
 private def example_grammar_sec: Grammar 2 String :=
@@ -273,9 +271,13 @@ private def example_interleave: Grammar 5 String :=
   ]
   = false
 
+end tests
+
 -- Benchmark tests
 
 open Pred.Compare
+
+namespace benchmarks
 
 def eq (v: α × Fin n) := symbol (Pred.eq v.1, v.2)
 def field (v: α × Fin n) := contains (symbol (Pred.eq v.1, v.2))

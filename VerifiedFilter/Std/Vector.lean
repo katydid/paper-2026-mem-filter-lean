@@ -276,3 +276,8 @@ theorem push_get {n: Nat} {α: Type u} (xs: Vector α n) (y: α):
   Vector.get (Vector.push xs y) (Fin.mk n (by omega)) = y := by
   rw [get_is_getElem]
   rw [push_getElem]
+
+theorem pop_back_push {n: Nat} {α: Type u} (xs: Vector α (n + 1)):
+  xs = Vector.push (Vector.pop xs) (Vector.back xs) := by
+  -- rw??
+  rw [push_pop_back xs]

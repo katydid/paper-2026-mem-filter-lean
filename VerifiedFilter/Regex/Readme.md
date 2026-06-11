@@ -19,3 +19,9 @@ The Katydid algorithm is built on top of some foundational functions and theorem
 * [ExtractReplace](./ExtractReplace.lean) shows how we can use extract and replace to apply a function and that it is equivalent to mapping over a regular expression as a functor.
 * [RegexID](./RegexID.lean) is an abbrevation for `Regex (Fin n)` used for a regular expression containing symbol indexes.
 * [SymCount](./SymCount.lean) defines a function that returns the number of symbols.
+
+The Fused Katydid algorithm has alternate versions of these implementations that handle a Vector Regexes instead of a single Regex.
+* [Extracts](./Extracts.lean) shows how can extract symbols from a Vector of regular expressions.
+* [Replaces](./Replaces.lean) shows how we can replace symbols back into a Vector of regular expressions.
+* [SymCounts](./SymCounts.lean) defines a function that returns the number of symbols.
+* [Katydids](./Katydids.lean) contains enters, leaves, `Regex.Katydid.derives` and `Regex.Point.derives` as helper functions for the fused implementation.

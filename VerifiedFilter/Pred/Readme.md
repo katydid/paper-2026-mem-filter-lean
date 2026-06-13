@@ -4,3 +4,4 @@ Here we define various predicate types as examples to show that decidable predic
 
 * [AnyEq](./AnyEq.lean) is a simple predicate with only equality and any.
 * [Compare](./Compare.lean) is a simple predicate library with only comparisons.
+* [JSONSchema](./JSONSchema.lean) is an approximation of a predicate library for JSON Schema.

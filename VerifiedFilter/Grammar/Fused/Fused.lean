@@ -44,26 +44,27 @@ instance
 instance [DecidableEq φ] [Hashable φ] [DecidableEq α]: FusedKatydid (Impl α (φ × Ref n)) (φ × Ref n) α where
   -- all instances have been created, so no implementations are required here
 
-partial def fusedDerive [DecidableEq φ] [Hashable φ] [FusedKatydid m (φ × Ref n) α]
+partial def Grammar.Fused.derive
+  [DecidableEq φ] [Hashable φ] [FusedKatydid m (φ × Ref n) α]
   (G: Grammar n φ) (Φ: φ → m α → m Bool)
   (rs: Vector (Regex (φ × Ref n)) l): m (Vector (Regex (φ × Ref n)) l) := do
   if Vector.all rs Regex.unescapable then Parser.skip; return rs
   match ← Parser.next with
   | Hint.value =>
-    let ⟨enters, _⟩ ← MemoizeKatydids.entersM ⟨l, rs⟩
-    let childrs <- Vector.mapM (xs := enters) (fun ⟨pred, ref⟩ =>
+    let ⟨enterSymbols, _⟩ ← MemoizeKatydids.entersM ⟨l, rs⟩
+    let childrs <- Vector.mapM (xs := enterSymbols) (fun ⟨pred, ref⟩ =>
       do if <- Φ pred Parser.token then return G.lookup ref else return Regex.emptyset)
     _ ← Parser.next -- always Hint.enter
-    let dchildrs ← fusedDerive G Φ childrs -- handle children
-    let rsLeave ← MemoizeKatydids.leavesM ⟨l, rs, (Vector.map Regex.null dchildrs)⟩
-    fusedDerive G Φ rsLeave -- handle siblings
-  | Hint.enter => fusedDerive G Φ rs
+    let dchildrs ← Fused.derive G Φ childrs -- handle children
+    let drs ← MemoizeKatydids.leavesM ⟨l, rs, (Vector.map Regex.null dchildrs)⟩
+    Fused.derive G Φ drs -- handle siblings
+  | Hint.enter => Fused.derive G Φ rs
   | _ => return rs -- Hint.leave or Hint.eof
 
-def validatesM {m} [DecidableEq φ] [Hashable φ] [FusedKatydid m (φ × Ref n) α]
+def Grammar.Fused.validateM {m} [DecidableEq φ] [Hashable φ] [FusedKatydid m (φ × Ref n) α]
   (G: Grammar n φ) (Φ: φ → m α → m Bool)
   (x: Regex (φ × Ref n)): m Bool := do
-  let dxs ← fusedDerive G Φ #v[x]
+  let dxs ← Grammar.Fused.derive G Φ #v[x]
   return Regex.null dxs.head
 
 def enters.init [DecidableEq φ] [Hashable φ] {n: Nat}
@@ -84,12 +85,12 @@ def run' [DecidableEq φ] [Hashable φ]
   | EStateM.Result.ok k _ => Except.ok k.1.1
   | EStateM.Result.error err _ => Except.error err
 
-def validates [DecidableEq α] [Hashable α] (G: Grammar n (Pred.AnyEq.Pred α)) (t: Hedge.Node α): Except String Bool :=
+def Grammar.Fused.validate [DecidableEq α] [Hashable α] (G: Grammar n (Pred.AnyEq.Pred α)) (t: Hedge.Node α): Except String Bool :=
   run'
     (enters.init)
     (leaves.init)
     (HedgeParser.ParserState.mk' t)
-    (validatesM (m := Impl α ((Pred.AnyEq.Pred α) × Ref n)) G Pred.AnyEq.Pred.evalmb G.start)
+    (Grammar.Fused.validateM (m := Impl α ((Pred.AnyEq.Pred α) × Ref n)) G Pred.AnyEq.Pred.evalmb G.start)
 
 def runM [DecidableEq α] [Hashable α]
   (G: Grammar n (Pred.AnyEq.Pred α))
@@ -97,26 +98,26 @@ def runM [DecidableEq α] [Hashable α]
   [Monad m] [MonadExcept String m] [FusedKatydid m ((Pred.AnyEq.Pred α) × Ref n) α]
   (hedge: Hedge α): m Bool := do
   MonadState.set (HedgeParser.ParserState.mks hedge)
-  validatesM G Pred.AnyEq.Pred.evalmb G.start
+  Grammar.Fused.validateM G Pred.AnyEq.Pred.evalmb G.start
 
-def filtersM [DecidableEq α] [Hashable α] (G: Grammar n (Pred.AnyEq.Pred α)) (hs: List (Hedge α)): Impl α ((Pred.AnyEq.Pred α) × Ref n) (List (Hedge α)) :=
-  List.filterM (as := hs) (fun h => MonadExcept.tryCatch (m := Impl α ((Pred.AnyEq.Pred α) × Ref n)) (runM G h) (fun _ => pure false))
+def Grammar.Fused.filtersM [DecidableEq α] [Hashable α] (G: Grammar n (Pred.AnyEq.Pred α)) (hs: List (Hedge α)): Impl α ((Pred.AnyEq.Pred α) × Ref n) (List (Hedge α)) :=
+  List.filterM (as := hs) (fun h => runM G h)
 
-def filters [DecidableEq α] [Hashable α] (G: Grammar n (Pred.AnyEq.Pred α)) (hs: List (Hedge α)): List (Hedge α) :=
+def Grammar.Fused.filter [DecidableEq α] [Hashable α] (G: Grammar n (Pred.AnyEq.Pred α)) (hs: List (Hedge α)): Except String (List (Hedge α)) :=
   match EStateM.run (s := (HedgeParser.ParserState.mks [])) (StateT.run (s := leaves.init) (StateT.run (s := enters.init) (filtersM G hs))) with
-  | EStateM.Result.ok k _ => k.1.1
-  | EStateM.Result.error _ _ => []
+  | EStateM.Result.ok k _ => Except.ok k.1.1
+  | EStateM.Result.error e _ => Except.error e
 
 -- Tests
 
 open TokenHedge (strnode)
 
-#guard validates
+#guard Grammar.Fused.validate
   (Grammar.mk Regex.emptyset #v[])
   (strnode "a" [strnode "b" [], strnode "c" [strnode "d" []]]) =
   Except.ok false
 
-#guard validates
+#guard Grammar.Fused.validate
   (Grammar.mk (n := 1)
     (Regex.symbol (Pred.AnyEq.Pred.eq (Token.string "a"), 0))
     #v[Regex.emptystr]
@@ -124,7 +125,7 @@ open TokenHedge (strnode)
   (strnode "a" []) =
   Except.ok true
 
-#guard validates
+#guard Grammar.Fused.validate
   (Grammar.mk (n := 1)
     (Regex.symbol (Pred.AnyEq.Pred.eq (Token.string "a"), 0))
     #v[Regex.emptystr]
@@ -132,7 +133,7 @@ open TokenHedge (strnode)
   (strnode "a" [strnode "b" []]) =
   Except.ok false
 
-#guard validates
+#guard Grammar.Fused.validate
   (Grammar.mk (n := 2)
     (Regex.symbol (Pred.AnyEq.Pred.eq (Token.string "a"), 0))
     #v[
@@ -143,7 +144,7 @@ open TokenHedge (strnode)
   (strnode "a" [strnode "b" []])
   = Except.ok true
 
-#guard validates
+#guard Grammar.Fused.validate
   (Grammar.mk (n := 2)
     (Regex.symbol (Pred.AnyEq.Pred.eq (Token.string "a"), 0))
     #v[
@@ -157,7 +158,7 @@ open TokenHedge (strnode)
   (strnode "a" [strnode "b" [], strnode "c" []]) =
   Except.ok true
 
-#guard validates
+#guard Grammar.Fused.validate
   (Grammar.mk (n := 3)
     (Regex.symbol (Pred.AnyEq.Pred.eq (Token.string "a"), 0))
     #v[
@@ -173,7 +174,7 @@ open TokenHedge (strnode)
   Except.ok true
 
 -- try to engage skip using emptyset, since it is unescapable
-#guard validates
+#guard Grammar.Fused.validate
   (Grammar.mk (n := 1)
     (Regex.symbol (Pred.AnyEq.Pred.eq (Token.string "a"), 0))
     #v[Regex.emptyset]
@@ -181,7 +182,7 @@ open TokenHedge (strnode)
   (strnode "a" [strnode "b" []])
   = Except.ok false
 
-#guard validates
+#guard Grammar.Fused.validate
   (Grammar.mk (n := 4)
     (Regex.symbol (Pred.AnyEq.Pred.eq (Token.string "a"), 0))
     #v[
@@ -197,7 +198,7 @@ open TokenHedge (strnode)
   (strnode "a" [strnode "b" [], strnode "c" [strnode "d" []]])
   = Except.ok false
 
-#guard validates
+#guard Grammar.Fused.validate
   (Grammar.mk (n := 2)
     (Regex.symbol (Pred.AnyEq.Pred.eq (Token.string "a"), 0))
     #v[
@@ -211,7 +212,7 @@ open TokenHedge (strnode)
   (strnode "a" [strnode "b" [], strnode "c" [strnode "d" []]]) =
   Except.ok false
 
-#guard validates
+#guard Grammar.Fused.validate
   (Grammar.mk (n := 3)
     (Regex.symbol (Pred.AnyEq.Pred.eq (Token.string "a"), 0))
     #v[
@@ -226,7 +227,7 @@ open TokenHedge (strnode)
   (strnode "a" [strnode "b" [], strnode "c" [strnode "d" []]])
   = Except.ok false
 
-#guard validates
+#guard Grammar.Fused.validate
   (Grammar.mk (n := 4)
     (Regex.symbol (Pred.AnyEq.Pred.eq (Token.string "a"), 0))
     #v[
@@ -242,7 +243,7 @@ open TokenHedge (strnode)
   (strnode "a" [strnode "b" [], strnode "c" [strnode "d" []]])
   = Except.ok false
 
-#guard filters
+#guard Grammar.Fused.filter
   (Grammar.mk (n := 1)
     (Regex.star (Regex.symbol (Pred.AnyEq.Pred.eq (Token.string "a"), 0)))
     #v[Regex.emptystr]
@@ -255,7 +256,7 @@ open TokenHedge (strnode)
     [strnode "a" [], strnode "b" [], strnode "c" []],
     [strnode "a" [], strnode "a" [], strnode "a" [], strnode "a" []],
   ]
-  = [
+  = Except.ok [
     [strnode "a" []],
     [strnode "a" [], strnode "a" []],
     [strnode "a" [], strnode "a" [], strnode "a" []],

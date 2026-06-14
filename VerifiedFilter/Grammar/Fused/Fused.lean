@@ -58,7 +58,6 @@ partial def Grammar.Fused.derive
     let ⟨enterSymbols, _⟩ ← MemoizeKatydids.entersM ⟨l, rs⟩
     let childrs <- Vector.mapM (xs := enterSymbols) (fun ⟨pred, ref⟩ =>
       do if <- Φ pred Parser.token then return G.lookup ref else return Regex.emptyset)
-    _ ← Parser.next -- always Hint.enter
     let dchildrs ← Fused.derive G Φ childrs -- handle children
     let drs ← MemoizeKatydids.leavesM ⟨l, rs, (Vector.map Regex.null dchildrs)⟩
     Fused.derive G Φ drs -- handle siblings
@@ -84,6 +83,8 @@ partial def Grammar.Fused.derive
     drs := ← MemoizeKatydids.leavesM ⟨l, drs, Vector.map Regex.null dchildrs⟩
     hint := ← Parser.next
   if hint == Hint.enter then Fused.derive G Φ rs else return drs
+
+-- end imperative_alternative
 
 def Grammar.Fused.validateM {m} [DecidableEq φ] [Hashable φ] [FusedKatydid m (φ × Ref n) α]
   (G: Grammar n φ) (Φ: φ → m α → m Bool)

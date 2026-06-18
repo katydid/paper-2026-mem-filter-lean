@@ -38,6 +38,10 @@ def extractAcc (r: Regex σ) (acc: Vector σ n): RegexID (n + symcount r) × Vec
     let (rid2, acc2) := extractAcc r2 acc1
     (and (rid1.cast_add (symcount r2)).cast_assoc rid2.cast_assoc, acc2.cast_assoc)
   | compliment r1 => let (rid1, acc1) := extractAcc r1 acc; (compliment rid1, acc1)
+  | xor r1 r2 =>
+    let (rid1, acc1) := extractAcc r1 acc
+    let (rid2, acc2) := extractAcc r2 acc1
+    (xor (rid1.cast_add (symcount r2)).cast_assoc rid2.cast_assoc, acc2.cast_assoc)
 
 -- extract extracts the symbols from a regular expression into a Vector and replaces them with indices into the Vector.
 def extract (r: Regex σ): Regex (Fin (symcount r)) × Vector σ (symcount r) :=
@@ -133,6 +137,23 @@ theorem extractAcc_append_toList (acc: Vector σ n) (r: Regex σ):
   | compliment r1 ih1 =>
     simp only [extractAcc]
     rw [ih1]
+  | xor r1 r2 ih1 ih2 =>
+    simp only [extractAcc]
+    rw [Vector.cast_assoc]
+    rw [Vector.cast_assoc]
+    rw [Vector.toList_append]
+    rw [Vector.cast_toList]
+    rw [Vector.cast_toList]
+    rw [ih2]
+    rw [Vector.toList_append]
+    rw [ih1]
+    rw [Vector.toList_append]
+    rw [ih2]
+    rw [ih2]
+    rw [<- ih2]
+    rw [Vector.toList_append]
+    -- aesop?
+    simp_all only [List.append_assoc]
 
 theorem extract_take_toList (acc: Vector σ l):
   (Vector.toList

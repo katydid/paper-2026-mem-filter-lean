@@ -18,6 +18,7 @@ def Regex.Char.derive (r: Regex Char) (a: Char): Regex Char :=
       (interleave (derive r2 a) r1)
   | and r1 r2 => and (derive r1 a) (derive r2 a)
   | compliment r1 => compliment (derive r1 a)
+  | xor r1 r2 => xor (derive r1 a) (derive r2 a)
 
 theorem gen_derive: Regex.Char.derive r a = Regex.derive (fun s a => s == a) r a := by
   induction r with
@@ -46,6 +47,10 @@ theorem gen_derive: Regex.Char.derive r a = Regex.derive (fun s a => s == a) r a
   | compliment r1 ih1 =>
     simp only [Regex.Char.derive, Regex.derive]
     rw [ih1]
+  | xor r1 r2 ih1 ih2 =>
+    simp only [Regex.Char.derive, Regex.derive]
+    rw [ih1]
+    rw [ih2]
 
 open Regex
 

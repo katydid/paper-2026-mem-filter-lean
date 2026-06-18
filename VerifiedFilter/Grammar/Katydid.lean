@@ -145,6 +145,16 @@ theorem Grammar.Katydid.derive_compliment {α: Type} (G: Grammar n φ) (Φ: φ �
   repeat rw [Regex.Katydid.derive_is_Regex_derive]
   simp only [Regex.derive]
 
+-- A helper lemma for derive_commutes.
+-- We undo the partial application and rewrite to the point derivative to a normal derivative for the xor operator.
+theorem Grammar.Katydid.derive_xor {α: Type} (G: Grammar n φ) (Φ: φ → α → Bool) (r1 r2: Regex (φ × Ref n)) (a: Node α):
+  Grammar.Katydid.derive G Φ (Regex.xor r1 r2) a
+  = Regex.xor (Grammar.Katydid.derive G Φ r1 a) (Grammar.Katydid.derive G Φ r2 a) := by
+  unfold Grammar.Katydid.derive
+  rw [unapply_hedge_param_and_flip]
+  repeat rw [Regex.Katydid.derive_is_Regex_derive]
+  simp only [Regex.derive]
+
 theorem Grammar.Katydid.and_start {α: Type} (G: Grammar n φ) (Φ: φ → α → Prop) [DecidableRel Φ] (label: α) (children: Hedge α):
   ((List.foldl (derive G (decideRel Φ)) (if decideRel Φ p label then G.lookup ref else Regex.emptyset) children).null = true)
   = (Φ p label /\ ((List.foldl (derive G (decideRel Φ)) (G.lookup ref) children).null = true)) := by
@@ -281,6 +291,13 @@ theorem derive_commutes (G: Grammar n φ) Φ [DecidableRel Φ]
     rw [Lang.derive_compliment]
     unfold Lang.compliment
     rfl
+  | xor r1 r2 ih1 ih2 =>
+    rw [Grammar.Katydid.derive_xor]
+    rw [Grammar.denote_xor]
+    rw [Grammar.denote_xor]
+    rw [Lang.derive_xor]
+    rw [ih1]
+    rw [ih2]
   termination_by node
   decreasing_by
     apply Node.sizeOf_children hx

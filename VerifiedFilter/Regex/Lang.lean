@@ -49,6 +49,9 @@ def Lang.interleave (P : Lang α) (Q : Lang α) (xs: List α): Prop :=
     P (List.get (List.interleaves xs) i).1
     /\ Q (List.get (List.interleaves xs) i).2
 
+def Lang.xor {α: Type} (P: Lang α) (Q: Lang α): Lang α :=
+  fun xs =>  (P xs \/ Q xs) /\ (Not (P xs /\ Q xs))
+
 -- Verifying the correctness of a filtering function, requires proving that the filtered elements are
 -- exactly those that both occur in the original list and belong to the language.
 def Lang.MemFilter {α: Type} (R: Lang α) (xs: List (List α)): Lang α :=
@@ -523,6 +526,10 @@ theorem null_compliment {α: Type} {R: Lang α}:
   null (compliment R) = null (Not ∘ R) :=
   rfl
 
+theorem null_xor {α: Type} {P Q: Lang α}:
+  null (xor P Q) = (((null P) \/ (null Q)) /\ (Not ((null P) /\ (null Q)))):=
+  rfl
+
 -- Theorems: derive
 
 theorem derive_emptyset {α: Type} {a: α}:
@@ -620,6 +627,10 @@ theorem derive_and {α: Type} {a: α} {P Q: Lang α}:
 
 theorem derive_compliment {α: Type} {x: α} {R: Lang α}:
   (derive (compliment R) x) = Not ∘ (derive R x) :=
+  rfl
+
+theorem derive_xor {α: Type} {a: α} {P Q: Lang α}:
+  (derive (xor P Q) a) = (xor (derive P a) (derive Q a)) :=
   rfl
 
 theorem derive_iff_concat {α: Type} {x: α} {P Q: Lang α} {xs: List α}:

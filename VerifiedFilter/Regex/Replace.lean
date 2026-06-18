@@ -20,6 +20,7 @@ def replaceLE (r: RegexID n) (xs: Vector σ l) (h: n <= l): Regex σ :=
   | interleave r1 r2 => interleave (replaceLE r1 xs h) (replaceLE r2 xs h)
   | and r1 r2 => and (replaceLE r1 xs h) (replaceLE r2 xs h)
   | compliment r1 => compliment (replaceLE r1 xs h)
+  | xor r1 r2 => xor (replaceLE r1 xs h) (replaceLE r2 xs h)
 
 -- replace replaces the symbols that were extracted from a regular expression with the symbols found at the indices in the Vector.
 def replace (r: Regex (Fin n)) (xs: Vector σ n): Regex σ :=
@@ -79,6 +80,11 @@ theorem replaceLE_take (r: RegexID n) (xs: Vector σ (n + l)):
   | compliment r1 ih1 =>
     simp only [replaceLE]
     rw [<- ih1]
+  | xor r1 r2 ih1 ih2 =>
+    simp only [replaceLE, Regex.xor.injEq]
+    rw [<- ih1]
+    rw [<- ih2]
+    apply And.intro rfl rfl
 
 theorem replaceLE_regexid_add (r: RegexID n) (xs: Vector σ (n + l)):
   replaceLE r xs (by omega) = replaceLE (RegexID.cast_add l r) xs (by omega):= by
@@ -117,3 +123,8 @@ theorem replaceLE_regexid_add (r: RegexID n) (xs: Vector σ (n + l)):
     simp only [replaceLE, RegexID.cast_add, Regex.map, Regex.compliment.injEq]
     rw [ih1]
     rfl
+  | xor r1 r2 ih1 ih2 =>
+    simp only [replaceLE, RegexID.cast_add, Regex.map, Regex.xor.injEq]
+    rw [ih1]
+    rw [ih2]
+    apply And.intro rfl rfl

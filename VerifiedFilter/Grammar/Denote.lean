@@ -178,6 +178,24 @@ theorem decreasing_compliment {α: Type} {σ: Type} [SizeOf σ] (r1: Regex σ) (
   apply Prod.Lex.right
   simp +arith only [Regex.compliment.sizeOf_spec]
 
+theorem decreasing_xor_l {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (xs: Hedge α):
+  Prod.Lex
+    (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
+    (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
+    (xs, r1)
+    (xs, Regex.xor r1 r2) := by
+  apply Prod.Lex.right
+  simp +arith only [Regex.xor.sizeOf_spec]
+
+theorem decreasing_xor_r {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (xs: Hedge α):
+  Prod.Lex
+    (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
+    (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
+    (xs, r2)
+    (xs, Regex.xor r1 r2) := by
+  apply Prod.Lex.right
+  simp +arith only [Regex.xor.sizeOf_spec]
+
 -- Lang.or, Lang.concat and Lang.star are unfolded to help with the termination proof.
 -- Φ needs to be the last parameter, so that simp only works on this function when the parameter r is provided.
 def Rule.denote (G: Grammar n φ) (Φ: φ → α → Prop)
@@ -201,6 +219,7 @@ def Rule.denote (G: Grammar n φ) (Φ: φ → α → Prop)
      /\ (denote G Φ r2 (List.get (List.interleaves nodes) i).2)
   | Regex.and r1 r2 => (denote G Φ r1 nodes) /\ (denote G Φ r2 nodes)
   | Regex.compliment r1 => Not (denote G Φ r1 nodes)
+  | Regex.xor r1 r2 => ((denote G Φ r1 nodes) \/ (denote G Φ r2 nodes)) /\ (Not ((denote G Φ r1 nodes) /\ (denote G Φ r2 nodes)))
   termination_by (nodes, r)
   decreasing_by
     · apply decreasing_symbol
@@ -215,6 +234,8 @@ def Rule.denote (G: Grammar n φ) (Φ: φ → α → Prop)
     · apply decreasing_and_l
     · apply decreasing_and_r
     · apply decreasing_compliment
+    · apply decreasing_xor_l
+    · apply decreasing_xor_r
 
 theorem denote_emptyset {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Prop):
   Rule.denote G Φ Regex.emptyset = Lang.emptyset := by
@@ -366,6 +387,11 @@ theorem denote_compliment {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α
   funext
   simp only [Rule.denote, Lang.compliment]
 
+theorem denote_xor {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Prop) (r1 r2: Regex (φ × Ref n)):
+  Rule.denote G Φ (Regex.xor r1 r2) = Lang.xor (Rule.denote G Φ r1) (Rule.denote G Φ r2) := by
+  funext
+  simp only [Rule.denote, Lang.xor]
+
 theorem null_commutes (G: Grammar n φ) (Φ: φ → α → Prop) [DecidableRel Φ] r:
   ((Regex.null r) = true) = Lang.null (Rule.denote G Φ r) := by
   induction r with
@@ -431,6 +457,11 @@ theorem null_commutes (G: Grammar n φ) (Φ: φ → α → Prop) [DecidableRel �
       simp_all only [Bool.false_eq_true, false_iff, not_false_eq_true]
     · intro a
       simp_all only [iff_false, Bool.not_eq_true]
+  | xor r1 r2 ih1 ih2 =>
+    rw [denote_xor]
+    rw [Lang.null_xor]
+    unfold Regex.null
+    grind
 
 theorem denote_nil_is_null (Φ: φ → α → Prop) [DecidableRel Φ]:
   Rule.denote G Φ r [] = Regex.null r := by
@@ -455,6 +486,8 @@ theorem denote_nil_is_null (Φ: φ → α → Prop) [DecidableRel Φ]:
     simp only [denote_and, Lang.and, Lang.null]
   | compliment r1 =>
     simp only [denote_compliment, Lang.compliment, Lang.null]
+  | xor r1 r2 =>
+    simp only [denote_xor, Lang.xor, Lang.null]
 
 end Grammar
 

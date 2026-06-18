@@ -22,6 +22,7 @@ def Regex.Point.derive: (r: Regex (σ × Bool)) → Regex σ
       (interleave (derive r2) (first r1))
   | and r1 r2 => and (derive r1) (derive r2)
   | compliment r1 => compliment (derive r1)
+  | xor r1 r2 => xor (derive r1) (derive r2)
 
 namespace Regex.Point
 
@@ -69,6 +70,12 @@ theorem map_first (f: σ → β) (r: Regex σ):
     simp only [Regex.map, first]
     simp only [compliment.injEq]
     exact ih1
+  | xor r1 r2 ih1 ih2 =>
+    simp only [Regex.map, first]
+    simp only [xor.injEq]
+    apply And.intro
+    · exact ih1
+    · exact ih2
 
 -- We prove that mapping a predicate and then taking the point derivative is
 -- the same as taking the derivative of a regular expression.
@@ -118,3 +125,7 @@ theorem regex_derive_is_point_derive (Φ: σ → α → Bool) (r: Regex σ) (a: 
   | compliment r1 ih1 =>
     simp only [Regex.derive, Regex.map, derive]
     rw [<- ih1]
+  | xor r1 r2 ih1 ih2 =>
+    simp only [Regex.derive, Regex.map, derive]
+    rw [<- ih1]
+    rw [<- ih2]

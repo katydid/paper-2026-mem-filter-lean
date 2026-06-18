@@ -113,6 +113,24 @@ theorem Grammar.JSONmembers.decreasing_compliment {α: Type} {σ: Type} [SizeOf 
   apply Prod.Lex.right
   simp +arith only [Regex.compliment.sizeOf_spec]
 
+theorem Grammar.JSONmembers.decreasing_xor_l {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (x: Hedge.Node α):
+  Prod.Lex
+    (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
+    (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
+    (x, r1)
+    (x, Regex.xor r1 r2) := by
+  apply Prod.Lex.right
+  simp +arith only [Regex.xor.sizeOf_spec]
+
+theorem Grammar.JSONmembers.decreasing_xor_r {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (x: Hedge.Node α):
+  Prod.Lex
+    (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
+    (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
+    (x, r2)
+    (x, Regex.xor r1 r2) := by
+  apply Prod.Lex.right
+  simp +arith only [Regex.xor.sizeOf_spec]
+
 def Grammar.JSONmembers.derive (G: Grammar n φ) (Φ: φ → α → Bool)
   (r: Regex (φ × Ref n)) (node: Node α): Regex (φ × Ref n) := match r with
   | Regex.emptyset => Regex.emptyset
@@ -137,6 +155,8 @@ def Grammar.JSONmembers.derive (G: Grammar n φ) (Φ: φ → α → Bool)
     Regex.and (derive G Φ r1 node) (derive G Φ r2 node)
   | Regex.compliment r1 =>
     Regex.compliment (derive G Φ r1 node)
+  | Regex.xor r1 r2 =>
+    Regex.xor (derive G Φ r1 node) (derive G Φ r2 node)
   -- Lean cannot guess how the recursive function terminates,
   -- so we have to tell it how the arguments decrease in size.
   -- The arguments decrease in the node case first
@@ -161,6 +181,8 @@ def Grammar.JSONmembers.derive (G: Grammar n φ) (Φ: φ → α → Bool)
     · apply decreasing_and_l
     · apply decreasing_and_r
     · apply decreasing_compliment
+    · apply decreasing_xor_l
+    · apply decreasing_xor_r
 
 namespace Grammar.JSONmembers
 
@@ -261,6 +283,13 @@ theorem Grammar.JSONmembers.derive_commutes (G: Grammar n φ) Φ [DecidableRel �
     rw [Grammar.denote_compliment]
     rw [Lang.derive_compliment]
     unfold Lang.compliment
+    rfl
+  | case10 x r1 r2 ih1 ih2 => -- xor
+    rw [Grammar.denote_xor]
+    rw [Grammar.denote_xor]
+    unfold Lang.xor
+    rw [ih1]
+    rw [ih2]
     rfl
 
 theorem Grammar.JSONmembers.derives_commutes (G: Grammar n φ) (Φ: φ → α → Prop) [DecidableRel Φ] (r: Regex (φ × Ref n)) (nodes: Hedge α):

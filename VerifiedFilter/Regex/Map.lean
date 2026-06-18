@@ -10,6 +10,7 @@ def Regex.map (r: Regex α) (f: α → β): Regex β := match r with
   | interleave r1 r2 => interleave (map r1 f) (map r2 f)
   | and r1 r2 => and (map r1 f) (map r2 f)
   | compliment r1 => compliment (map r1 f)
+  | xor r1 r2 => xor (map r1 f) (map r2 f)
 
 namespace Regex
 
@@ -44,6 +45,10 @@ theorem map_id (r: Regex α):
   | compliment r1 ih1 =>
     simp only [map]
     rw [ih1]
+  | xor r1 r2 ih1 ih2 =>
+    simp only [map]
+    rw [ih1]
+    rw [ih2]
 
 theorem map_map (r: Regex α) (f: α → β) (g: β → σ):
   map (map r f) g = map r (fun r' => g (f r')) := by
@@ -76,6 +81,10 @@ theorem map_map (r: Regex α) (f: α → β) (g: β → σ):
   | compliment r1 ih1 =>
     simp only [map]
     rw [ih1]
+  | xor r1 r2 ih1 ih2 =>
+    simp only [map]
+    rw [ih1]
+    rw [ih2]
 
 theorem map_null {σ} (Φ: σ → Bool) (r: Regex σ):
   (map r (fun s => (s, Φ s))).null = r.null := by
@@ -107,6 +116,10 @@ theorem map_null {σ} (Φ: σ → Bool) (r: Regex σ):
   | compliment r1 ih1 =>
     simp only [map, Regex.null]
     rw [ih1]
+  | xor r1 r2 ih1 ih2 =>
+    simp only [map, Regex.null]
+    rw [ih1]
+    rw [ih2]
 
 instance: Functor Regex where
   map f := Regex.map (f := f)

@@ -11,5 +11,6 @@ def symcount (r: Regex σ): Nat :=
   | or r1 r2 => symcount r1 + symcount r2 | concat r1 r2 => symcount r1 + symcount r2
   | interleave r1 r2 => symcount r1 + symcount r2
   | and r1 r2 => symcount r1 + symcount r2 | compliment r1 => symcount r1
+  | xor r1 r2 => symcount r1 + symcount r2
 
 #guard symcount (or (symbol 'a') (star (symbol 'b'))) = 2

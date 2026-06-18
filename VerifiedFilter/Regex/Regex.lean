@@ -11,7 +11,7 @@ import VerifiedFilter.Regex.Lang
 inductive Regex (σ: Type) where
   | emptyset | emptystr | symbol (s: σ) | or (r1 r2: Regex σ)
   | concat (r1 r2: Regex σ) | star (r1: Regex σ) | interleave (r1 r2: Regex σ)
-  | and (r1 r2: Regex σ) | compliment (r1: Regex σ)
+  | and (r1 r2: Regex σ) | compliment (r1: Regex σ) | xor (r1 r2: Regex σ)
   deriving DecidableEq, Ord, Repr, Hashable
 
 -- null defines whether a regular expression matches the empty string.
@@ -20,6 +20,7 @@ def Regex.null: (r: Regex σ) → Bool
   | or r1 r2 => (null r1 || null r2) | concat r1 r2 => (null r1 && null r2)
   | star _ => true | interleave r1 r2 => (null r1 && null r2)
   | and r1 r2 => (null r1 && null r2) | compliment r1 => ! (null r1)
+  | xor r1 r2 => ((null r1) || (null r2)) && (!(null r1 && null r2))
 
 -- denote defines the semantics of a regular expression.
 def Regex.denote (Φ: σ → α → Prop) (r: Regex σ) (xs: List α): Prop :=
@@ -41,6 +42,7 @@ def Regex.denote (Φ: σ → α → Prop) (r: Regex σ) (xs: List α): Prop :=
      /\ (denote Φ r2 (List.get (List.interleaves xs) i).2)
   | and r1 r2 => (denote Φ r1 xs) /\ (denote Φ r2 xs)
   | compliment r1 => Not (denote Φ r1 xs)
+  | xor r1 r2 => ((denote Φ r1 xs) \/ (denote Φ r2 xs)) /\ (Not ((denote Φ r1 xs) /\ (denote Φ r2 xs)))
   termination_by (r, xs.length)
 
 namespace Regex
@@ -98,6 +100,7 @@ def Regex.derive (Φ: σ → α → Bool) (r: Regex σ) (a: α): Regex σ := mat
       (interleave (derive Φ r2 a) r1)
   | and r1 r2 => and (derive Φ r1 a) (derive Φ r2 a)
   | compliment r1 => compliment (derive Φ r1 a)
+  | xor r1 r2 => xor (derive Φ r1 a) (derive Φ r2 a)
 
 -- example derivative
 #guard Regex.derive (· == ·) (Regex.or (Regex.symbol 1) (Regex.symbol 2)) 1
@@ -237,6 +240,11 @@ theorem denote_compliment {α: Type} {σ: Type} (Φ: σ → α → Prop) (r1: Re
   funext
   simp only [denote, Lang.compliment]
 
+theorem denote_xor {α: Type} {σ: Type} (Φ: σ → α → Prop) (r1 r2: Regex σ):
+  denote Φ (xor r1 r2) = Lang.xor (denote Φ r1) (denote Φ r2) := by
+  funext
+  simp only [denote, Lang.xor]
+
 -- Commutes proofs
 
 theorem null_commutes {σ: Type} {α: Type} (Φ: σ → α → Prop) (r: Regex σ):
@@ -298,6 +306,13 @@ theorem null_commutes {σ: Type} {α: Type} (Φ: σ → α → Prop) (r: Regex �
       simp_all only [Bool.false_eq_true, false_iff, not_false_eq_true]
     · intro a
       simp_all only [iff_false, Bool.not_eq_true]
+  | xor r1 r2 ih1 ih2 =>
+    unfold denote
+    unfold null
+    rw [<- ih1]
+    rw [<- ih2]
+    rw [Bool.and_eq_true]
+    grind
 
 theorem derive_commutes {σ: Type} {α: Type} (Φ: σ → α → Prop) [DecidableRel Φ] (r: Regex σ) (x: α):
   denote Φ (derive (fun s a => Φ s a) r x) = Lang.derive (denote Φ r) x := by
@@ -355,6 +370,12 @@ theorem derive_commutes {σ: Type} {α: Type} (Φ: σ → α → Prop) [Decidabl
     rw [ih1]
     simp only [Lang.derive]
     rfl
+  | xor r1 r2 ih1 ih2 =>
+    simp only [denote_xor, derive]
+    rw [Lang.derive_xor]
+    unfold Lang.xor
+    rw [ih1]
+    rw [ih2]
 
 theorem derive_commutesb {σ: Type} {α: Type} (Φ: σ → α → Bool) (r: Regex σ) (x: α):
   denote (fun s a => Φ s a) (derive Φ r x) = Lang.derive (denote (fun s a => Φ s a) r) x := by

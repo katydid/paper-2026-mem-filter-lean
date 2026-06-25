@@ -281,3 +281,52 @@ theorem pop_back_push {n: Nat} {α: Type u} (xs: Vector α (n + 1)):
   xs = Vector.push (Vector.pop xs) (Vector.back xs) := by
   -- rw??
   rw [push_pop_back xs]
+
+def boolCombos (l: Nat): Vector (Vector Bool l) (2^l) :=
+  Vector.ofFn fun i =>
+    Vector.ofFn fun j =>
+      Nat.testBit i.val j.val
+
+#guard boolCombos 1
+  = #v[#v[false], #v[true]]
+
+#guard boolCombos 2
+  = #v[#v[false, false], #v[true, false], #v[false, true], #v[true, true]]
+
+#guard boolCombos 3
+  = #v[
+    #v[false, false, false],
+    #v[true, false, false],
+    #v[false, true, false],
+    #v[true, true, false],
+    #v[false, false, true],
+    #v[true, false, true],
+    #v[false, true, true],
+    #v[true, true, true],
+  ]
+
+def boolCombosNaive (l: Nat): Vector (Vector Bool l) (2^l) :=
+  match l with
+  | 0 => #v[#v[]]
+  | l' + 1 => let combos := boolCombosNaive l'
+    let combosf := Vector.map (xs := combos) (fun c => c.push false)
+    let combost := Vector.map (xs := combos) (fun c => c.push true)
+    Vector.cast (xs := combosf ++ combost) (by rw [← Nat.two_pow_succ])
+
+#guard boolCombosNaive 1
+  = #v[#v[false], #v[true]]
+
+#guard boolCombosNaive 2
+  = #v[#v[false, false], #v[true, false], #v[false, true], #v[true, true]]
+
+#guard boolCombosNaive 3
+  = #v[
+    #v[false, false, false],
+    #v[true, false, false],
+    #v[false, true, false],
+    #v[true, true, false],
+    #v[false, false, true],
+    #v[true, false, true],
+    #v[false, true, true],
+    #v[true, true, true],
+  ]

@@ -3,7 +3,7 @@
 -- outside of some whitespace edge cases that this library needs to be improved for to properly cover.
 
 -- TODO: write a better isSpace
-def isSpace: Char -> Bool
+def isSpace: Char → Bool
   | c => c == ' '
 
 -- TODO: write a better words

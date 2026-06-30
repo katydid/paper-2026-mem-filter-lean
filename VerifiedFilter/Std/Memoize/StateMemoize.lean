@@ -5,14 +5,14 @@ import VerifiedFilter.Std.Memoize.Memoize
 
 -- MemTable.StateM.run is an example of how we can run StateM when a state MemTable.
 private def MemTable.StateM.run
-  {α: Type} [DecidableEq α] [Hashable α] {β: α -> Type}
-  (f: (a: α) -> β a) (a: α) (table: MemTable f): ({b: β a // b = f a} × MemTable f) :=
+  {α: Type} [DecidableEq α] [Hashable α] {β: α → Type}
+  (f: (a: α) → β a) (a: α) (table: MemTable f): ({b: β a // b = f a} × MemTable f) :=
   MemTable.call (m := StateM (MemTable f)) f a table
 
 -- We prove that for any table, function and input, that
 -- running with a State monad is the same as just calling the function.
-private theorem MemTable.StateM.call_is_correct {α: Type} {β: α -> Type}
-  [DecidableEq α] [Hashable α] (f: (a: α) -> β a)
+private theorem MemTable.StateM.call_is_correct {α: Type} {β: α → Type}
+  [DecidableEq α] [Hashable α] (f: (a: α) → β a)
   (table: MemTable f) (a: α):
   (MemTable.call (m := StateM (MemTable f)) f a table).fst.val = f a := by
   generalize ((MemTable.call (m := StateM (MemTable f)) f a table).fst) = x
@@ -25,8 +25,8 @@ private theorem MemTable.StateM.call_is_correct {α: Type} {β: α -> Type}
 private def Memoize.StateM.call
   {α: Type}
   [DecidableEq α] [Hashable α]
-  {β: α -> Type}
-  (f: (a: α) -> β a)
+  {β: α → Type}
+  (f: (a: α) → β a)
   [memf: Memoize f (StateM σ)]
   (a: α): StateM σ {b: β a // b = f a} :=
   memf.call a
@@ -36,8 +36,8 @@ private def Memoize.StateM.call
 theorem Memoize.StateM.call_is_correct
   {α: Type}
   [DecidableEq α] [Hashable α]
-  {β: α -> Type}
-  (f: (a: α) -> β a)
+  {β: α → Type}
+  (f: (a: α) → β a)
   {σ: Type}
   [memf: Memoize f (StateM σ)]
   (a: α) (state: σ):
@@ -53,8 +53,8 @@ theorem Memoize.StateM.call_is_correct
 private def Memoize.StateM.run
   {α: Type}
   [DecidableEq α] [Hashable α]
-  {β: α -> Type}
-  (f: (a: α) -> β a)
+  {β: α → Type}
+  (f: (a: α) → β a)
   {σ: Type}
   [memf: Memoize f (StateM σ)]
   (a: α) (state: σ): {b: β a // b = f a} × σ :=
@@ -66,8 +66,8 @@ private def Memoize.StateM.run
 private def Memoize.StateM.run'
   {α: Type}
   [DecidableEq α] [Hashable α]
-  {β: α -> Type}
-  (f: (a: α) -> β a)
+  {β: α → Type}
+  (f: (a: α) → β a)
   {σ: Type}
   [memf: Memoize f (StateM σ)]
   (a: α) (state: σ): {b: β a // b = f a} :=
@@ -78,8 +78,8 @@ private def Memoize.StateM.run'
 -- that run Memoize via a State monad is the same as just calling the function.
 theorem Memoize.StateM.run'_is_correct {α: Type}
   [DecidableEq α] [Hashable α]
-  {β: α -> Type}
-  (f: (a: α) -> β a)
+  {β: α → Type}
+  (f: (a: α) → β a)
   {σ: Type}
   [Memoize f (StateM σ)]
   (a: α) (state: σ):
@@ -109,8 +109,8 @@ private def fibM' [Monad m] [MonadState (MemTable fib) m] [memfib: Memoize fib m
   | 0 => pure ⟨0, rfl⟩
   | 1 => pure ⟨1, rfl⟩
   | n + 2 =>
-    let fn1: { res: Nat // res = fib n } <- fibM' n
-    let fn2: { res: Nat // res = fib (n + 1) } <- fibM' (n + 1)
+    let fn1: { res: Nat // res = fib n } ← fibM' n
+    let fn2: { res: Nat // res = fib (n + 1) } ← fibM' (n + 1)
     let result: { res: Nat // res = fib (n + 2) } := Subtype.mk
       (fn1.val + fn2.val)
       (by obtain ⟨fn1, hfn1⟩ := fn1; obtain ⟨fn2, hfn2⟩ := fn2; unfold fib; subst_vars; rfl)
@@ -131,4 +131,4 @@ private theorem fibM'_is_correct (table: MemTable fib) (n: Nat): fib n = (StateM
 -- We prove that `fibM` always returns the correct result according to `fib`.
 private theorem fibM_is_correct (n: Nat): fib n = fibM n := by
   unfold fibM
-  rw [<- fibM'_is_correct]
+  rw [← fibM'_is_correct]

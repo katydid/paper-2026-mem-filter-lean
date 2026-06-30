@@ -24,11 +24,11 @@ theorem symcounts_add (rs: Vector (Regex σ) l) (r: Regex σ):
   rw [Nat.add_comm r.symcount (symcounts rs)]
   -- rw??
   rw [Nat.add_left_inj]
-  rw [<- Vector.foldl_map]
-  rw [<- symcounts]
+  rw [← Vector.foldl_map]
+  rw [← symcounts]
 
 theorem symcounts_add1 (rs: Vector (Regex σ) (l + 1)):
   symcounts rs = symcount (Vector.back rs) + symcounts (Vector.pop rs) := by
-  rw [<- symcounts_add]
+  rw [← symcounts_add]
   rw [Vector.push_pop_back]
   rfl

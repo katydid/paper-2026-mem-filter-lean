@@ -91,7 +91,7 @@ noncomputable instance: SizeOf (ParserState α) where
 def pop
   [Monad m] [Debug m] [MonadExcept String m] [MonadStateOf (CurrentState α) m] [MonadStateOf (ParseStack α) m]:
   m Unit := do
-  let top : Option (Hedge α) <- Stack.popM?
+  let top : Option (Hedge α) ← Stack.popM?
   match top with
   | Option.some top' =>
     set (CurrentState.opened top')
@@ -104,10 +104,10 @@ def next
   [Monad m] [Debug m] [MonadExcept String m] [MonadState (CurrentState α) m] [MonadStateOf (CurrentState α) m] [MonadStateOf (ParseStack α) m]
   : m Hint := do
   Debug.debug "next"
-  let curr <- get
+  let curr ← get
   match curr with
   | CurrentState.unknown f =>
-    _ <- set (CurrentState.opened f)
+    _ ← set (CurrentState.opened f)
     return Hint.enter
   | CurrentState.opened [] =>
     pop (α := α)
@@ -117,7 +117,7 @@ def next
     set (CurrentState.node current)
     return Hint.value
   | CurrentState.node (Hedge.Node.node _ children) =>
-    _ <- set (CurrentState.opened children)
+    _ ← set (CurrentState.opened children)
     return Hint.enter
   | CurrentState.eof =>
     return Hint.eof
@@ -126,7 +126,7 @@ def skip
   [Monad m] [Debug m] [MonadExcept String m] [MonadState (CurrentState α) m] [MonadStateOf (CurrentState α) m] [MonadStateOf (ParseStack α) m]
   : m Unit := do
   Debug.debug "skip"
-  let curr <- get
+  let curr ← get
   match curr with
   | CurrentState.unknown _ => pop (α := α)
   | CurrentState.opened _ => pop (α := α)
@@ -138,7 +138,7 @@ def token
   [Monad m] [Debug m] [MonadExcept String m] [MonadStateOf (CurrentState α) m]
   : m α := do
   Debug.debug "token"
-  let curr <- get
+  let curr ← get
   match curr with
   | CurrentState.unknown _ => throw "unknown"
   | CurrentState.opened _ => throw "unknown"
@@ -156,11 +156,11 @@ instance : Debug (StateT (ParserState α) (Except String)) where
 abbrev HedgeParser α β := StateT (ParserState α) (Except String) β
 
 def getStack [Monad m] [MonadStateOf (ParserState α) m] : m (ParseStack α) := do
-  let t: ParserState α <- MonadStateOf.get
+  let t: ParserState α ← MonadStateOf.get
   return t.stack
 
 def setStack [Monad m] [MonadStateOf (ParserState α) m] (stack: ParseStack α) : m PUnit := do
-  let t: ParserState α <- MonadStateOf.get
+  let t: ParserState α ← MonadStateOf.get
   MonadStateOf.set (ParserState.mk t.current stack)
   return ()
 
@@ -169,22 +169,22 @@ instance instMonadStateOfParserStateMonadStateOfParseStack[Monad m] [MonadStateO
   get : m (ParseStack α) := getStack
   set (stack: ParseStack α) : m PUnit := setStack stack
   modifyGet {β: Type} (f: ParseStack α → Prod β (ParseStack α)): m β := do
-    let t: ParserState α <- MonadStateOf.get
+    let t: ParserState α ← MonadStateOf.get
     let (res, newstack) := f t.stack
     MonadStateOf.set (ParserState.mk t.current newstack)
     return res
 
 def getCurrent [Monad m] [MonadStateOf (ParserState α) m]: m (CurrentState α) := do
-  let t <- MonadState.get
+  let t ← MonadState.get
   return t.current
 
 def setCurrent [Monad m] [MonadStateOf (ParserState α) m] (current: CurrentState α) : m PUnit := do
-    let t <- MonadState.get
+    let t ← MonadState.get
     MonadStateOf.set (ParserState.mk current t.stack)
     return ()
 
 def modifyGetCurrent [Monad m] [MonadStateOf (ParserState α) m] {β: Type} (f: CurrentState α → Prod β (CurrentState α)): m β := do
-    let t <- MonadState.get
+    let t ← MonadState.get
     let (res, newcurrent) := f t.current
     MonadStateOf.set (ParserState.mk newcurrent t.stack)
     return res
@@ -307,16 +307,16 @@ def runs (x: HedgeParser α β) (h: Hedge α): Bool :=
   | Except.ok _ => true
 
 def exampleParse1 [p: Parser m Token] [MonadExcept String m] [Monad m]: m Unit := do
-  assertEq Hint.enter (<- p.next) -- enter Hedge.Node
-  assertEq Hint.value (<- p.next); assertEq (Token.string "blogpost") (<- p.token)
-  assertEq Hint.enter (<- p.next) -- enter blogpost
-  assertEq Hint.value (<- p.next); assertEq (Token.string "author") (<- p.token)
-  _ <- p.skip                     -- skip author's children, username, ...
-  assertEq Hint.value (<- p.next); assertEq (Token.string "content") (<- p.token)
-  assertEq Hint.enter (<- p.next); assertEq Hint.leave (<- p.next)
-  assertEq Hint.leave (<- p.next) -- leave blogpost
-  assertEq Hint.leave (<- p.next) -- leave Hedge.Node
-  assertEq Hint.eof (<- p.next)
+  assertEq Hint.enter (← p.next) -- enter Hedge.Node
+  assertEq Hint.value (← p.next); assertEq (Token.string "blogpost") (← p.token)
+  assertEq Hint.enter (← p.next) -- enter blogpost
+  assertEq Hint.value (← p.next); assertEq (Token.string "author") (← p.token)
+  _ ← p.skip                     -- skip author's children, username, ...
+  assertEq Hint.value (← p.next); assertEq (Token.string "content") (← p.token)
+  assertEq Hint.enter (← p.next); assertEq Hint.leave (← p.next)
+  assertEq Hint.leave (← p.next) -- leave blogpost
+  assertEq Hint.leave (← p.next) -- leave Hedge.Node
+  assertEq Hint.eof (← p.next)
 
 #guard runs exampleParse1 [node (Token.string "blogpost") [
     node (Token.string "author") [
@@ -455,7 +455,7 @@ theorem next_decreases_size_of_parserstate
   | unknown xs =>
     rw [next_unknown_opened] at h
     simp at h
-    rw [<- h]
+    rw [← h]
     exact sizeOf_unknown_gt_opened
   | opened xs =>
     cases xs with
@@ -464,29 +464,29 @@ theorem next_decreases_size_of_parserstate
       | nil =>
         rw [next_opened_popped_opened_eof] at h
         simp at h
-        rw [<- h]
+        rw [← h]
         exact sizeOf_opened_gt_popped_opened_eof
       | cons s' ss' =>
         rw [next_opened_popped_opened_more] at h
         simp at h
-        rw [<- h]
+        rw [← h]
         exact sizeOf_opened_gt_popped_opened_more
     | cons tree fsiblings =>
       cases tree with
       | node f v =>
         rw [next_opened_push] at h
         simp at h
-        rw [<- h]
+        rw [← h]
         exact sizeOf_opened_gt_push
   | node n =>
     cases n
     rw [next_node_opened] at h
     simp at h
-    rw [<- h]
+    rw [← h]
     exact sizeOf_node_gt_opened
   | eof =>
     rw [next_eof_gt_eof] at h'
     simp at h'
     obtain ⟨heof, _⟩ := h'
-    rw [<- heof] at hneof
+    rw [← heof] at hneof
     contradiction

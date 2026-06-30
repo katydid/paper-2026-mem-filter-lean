@@ -14,12 +14,12 @@ def walk [ToString α] [Parser m α] [Monad m] [Debug m] (actions: List Action) 
   match actions with
   | [] => return List.reverse logs
   | (Action.next::rest) => do
-    match <- Parser.next with
+    match ← Parser.next with
     | Hint.eof => return List.reverse (toString Hint.eof :: logs)
     | h' => walk rest (toString h' :: logs)
   | (Action.skip::rest) => do
-    _ <- Parser.skip
+    _ ← Parser.skip
     walk rest logs
   | (Action.token::rest) => do
-    let tok: α <- Parser.token
+    let tok: α ← Parser.token
     walk rest ((toString tok) :: logs)

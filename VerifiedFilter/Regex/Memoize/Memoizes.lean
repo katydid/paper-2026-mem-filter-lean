@@ -29,8 +29,8 @@ instance (m: Type → Type u) (σ: Type) [DecidableEq σ] [Hashable σ] [Monad m
 
 def derives [Monad m] [DecidableEq σ] [Hashable σ] [MemoizeKatydids m σ]
   (Φ: σ → Bool) (rs: Vector (Regex σ) l): m {drs: Vector (Regex σ) l // drs = Regex.Katydid.derives Φ rs } := do
-  let ⟨symbols, hsymbols⟩ <- MemoizeKatydids.entersM ⟨l, rs⟩
-  let ⟨res, hres⟩ <- MemoizeKatydids.leavesM ⟨l, rs, Vector.map Φ symbols⟩
+  let ⟨symbols, hsymbols⟩ ← MemoizeKatydids.entersM ⟨l, rs⟩
+  let ⟨res, hres⟩ ← MemoizeKatydids.leavesM ⟨l, rs, Vector.map Φ symbols⟩
   let h: res = Regex.Katydid.derives Φ rs := by
     simp only at hres
     rw [hsymbols] at hres
@@ -39,7 +39,7 @@ def derives [Monad m] [DecidableEq σ] [Hashable σ] [MemoizeKatydids m σ]
 
 def validates [Monad m] [DecidableEq σ] [Hashable σ] [MemoizeKatydids m σ]
   (Φ: σ → α → Bool) (r: Regex σ) (xs: List α): m Bool := do
-  let dr <- (List.foldlMemoize (fun dr x => Regex.Katydid.derives (flip Φ x) dr) (fun dr x => Regex.Memoize.derives (flip Φ x) dr) #v[r] xs)
+  let dr ← (List.foldlMemoize (fun dr x => Regex.Katydid.derives (flip Φ x) dr) (fun dr x => Regex.Memoize.derives (flip Φ x) dr) #v[r] xs)
   return Regex.null dr.val.head
 
 def filters  [Monad m] [DecidableEq σ] [Hashable σ] [MemoizeKatydids m σ]

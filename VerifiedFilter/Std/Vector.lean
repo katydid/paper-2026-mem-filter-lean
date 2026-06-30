@@ -36,7 +36,7 @@ theorem toList_length (xs : Vector α l):
 
 def cast_assoc (xs: Vector σ (n + n1 + n2)): Vector σ (n + (n1 + n2)) :=
   have h : (n + n1 + n2) = n + (n1 + n2) := by
-    rw [<- Nat.add_assoc]
+    rw [← Nat.add_assoc]
   Vector.cast h xs
 
 theorem cast_toList_nil {α: Type u} (h: 0 = n):
@@ -89,10 +89,10 @@ theorem toList_cons {xs : Vector α n} :
   (Vector.cons x xs).toList = List.cons x xs.toList := by
   rw [← List.singleton_append]
   simp only [Vector.cons]
-  rw [<- show #v[x] ++ xs = #v[x].append xs from rfl]
+  rw [← show #v[x] ++ xs = #v[x].append xs from rfl]
   rw [cast_toList]
   rw [Vector.toList_append]
-  rw [<- singleton_toList]
+  rw [← singleton_toList]
 
 theorem cons_append_list (xs: Vector α n1) (ys: Vector α n2):
   (Vector.cons x (xs ++ ys)).toList = ((Vector.cons x xs) ++ ys).toList := by
@@ -260,7 +260,7 @@ theorem append_get (xs: Vector α n) (ys: Vector α m) (h: i < n):
 theorem take_get (xs: Vector α (n + m)) (h1: i < n):
   Vector.get (Vector.take xs n) ⟨i, (by omega)⟩ = Vector.get xs ⟨i, h⟩ := by
   have h := take_append_drop_cast (xs := xs) (i := n)
-  rw [<- h]
+  rw [← h]
   rw [Vector.get_cast]
   simp only
   rw [append_get]

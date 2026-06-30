@@ -22,7 +22,7 @@ def cast (x: IfExpr σ l) (h: l = k): IfExpr σ k := by
   cases h
   exact x
 
-def eval (Φ: σ -> Bool): IfExpr σ l -> Vector Bool l
+def eval (Φ: σ → Bool): IfExpr σ l → Vector Bool l
   | res bools => bools
   | expr s thn els => if Φ s then thn.eval Φ else els.eval Φ
 

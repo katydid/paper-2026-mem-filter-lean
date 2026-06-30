@@ -25,19 +25,19 @@ example : Grammar 5 (AnyEq.Pred String) := Grammar.mk
   (start := Regex.symbol (AnyEq.Pred.eq "html", 0))
   -- production rules
   (prods := #v[
-    -- Html -> ("head", Head) · ("body", Body)
+    -- Html → ("head", Head) · ("body", Body)
     Regex.concat
       (Regex.symbol (AnyEq.Pred.eq "head", 1))
       (Regex.symbol (AnyEq.Pred.eq "body", 2))
-    -- Head -> ("title", Text) | ε
+    -- Head → ("title", Text) | ε
     , Regex.or
       (Regex.symbol (AnyEq.Pred.eq "title", 3))
       Regex.emptystr
-    -- Body -> ("p", Text)*
+    -- Body → ("p", Text)*
     , Regex.star (Regex.symbol (AnyEq.Pred.eq "p", 3))
-    -- Text -> (., Empty)
+    -- Text → (., Empty)
     , Regex.symbol (AnyEq.Pred.any, 4)
-    -- Empty -> ε
+    -- Empty → ε
     , Regex.emptystr
   ])
 

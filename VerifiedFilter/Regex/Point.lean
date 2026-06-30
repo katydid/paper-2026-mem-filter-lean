@@ -90,12 +90,12 @@ theorem regex_derive_is_point_derive (Φ: σ → α → Bool) (r: Regex σ) (a: 
     simp only [Regex.derive, Regex.map, derive]
   | or r1 r2 ih1 ih2 =>
     simp only [Regex.derive, Regex.map, derive]
-    rw [<- ih1]
-    rw [<- ih2]
+    rw [← ih1]
+    rw [← ih2]
   | concat r1 r2 ih1 ih2 =>
     simp only [Regex.derive, Regex.map, derive]
-    rw [<- ih1]
-    rw [<- ih2]
+    rw [← ih1]
+    rw [← ih2]
     have h : first (r2.map fun s => (s, Φ s a)) = r2 := by
       apply map_first
     have h' : (r1.map fun s => (s, Φ s a)).null = r1.null := by
@@ -104,14 +104,14 @@ theorem regex_derive_is_point_derive (Φ: σ → α → Bool) (r: Regex σ) (a: 
     rw [h']
   | star r1 ih1 =>
     simp only [Regex.derive, Regex.map, derive]
-    rw [<- ih1]
+    rw [← ih1]
     have h : first (r1.map fun s => (s, Φ s a)) = r1 := by
       apply map_first
     rw [h]
   | interleave r1 r2 ih1 ih2 =>
     simp only [Regex.derive, Regex.map, derive]
-    rw [<- ih1]
-    rw [<- ih2]
+    rw [← ih1]
+    rw [← ih2]
     have h1 : first (r1.map fun s => (s, Φ s a)) = r1 := by
       apply map_first
     have h2 : first (r2.map fun s => (s, Φ s a)) = r2 := by
@@ -120,12 +120,12 @@ theorem regex_derive_is_point_derive (Φ: σ → α → Bool) (r: Regex σ) (a: 
     rw [h2]
   | and r1 r2 ih1 ih2 =>
     simp only [Regex.derive, Regex.map, derive]
-    rw [<- ih1]
-    rw [<- ih2]
+    rw [← ih1]
+    rw [← ih2]
   | compliment r1 ih1 =>
     simp only [Regex.derive, Regex.map, derive]
-    rw [<- ih1]
+    rw [← ih1]
   | xor r1 r2 ih1 ih2 =>
     simp only [Regex.derive, Regex.map, derive]
-    rw [<- ih1]
-    rw [<- ih2]
+    rw [← ih1]
+    rw [← ih2]

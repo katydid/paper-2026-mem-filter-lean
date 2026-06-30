@@ -76,7 +76,7 @@ theorem extractAcc_append_toList (acc: Vector σ n) (r: Regex σ):
     rw [Vector.toList_append]
     rw [ih2]
     rw [ih2]
-    rw [<- ih2]
+    rw [← ih2]
     rw [Vector.toList_append]
     -- aesop?
     simp_all only [List.append_assoc]
@@ -93,7 +93,7 @@ theorem extractAcc_append_toList (acc: Vector σ n) (r: Regex σ):
     rw [Vector.toList_append]
     rw [ih2]
     rw [ih2]
-    rw [<- ih2]
+    rw [← ih2]
     rw [Vector.toList_append]
     -- aesop?
     simp_all only [List.append_assoc]
@@ -113,7 +113,7 @@ theorem extractAcc_append_toList (acc: Vector σ n) (r: Regex σ):
     rw [Vector.toList_append]
     rw [ih2]
     rw [ih2]
-    rw [<- ih2]
+    rw [← ih2]
     rw [Vector.toList_append]
     -- aesop?
     simp_all only [List.append_assoc]
@@ -130,7 +130,7 @@ theorem extractAcc_append_toList (acc: Vector σ n) (r: Regex σ):
     rw [Vector.toList_append]
     rw [ih2]
     rw [ih2]
-    rw [<- ih2]
+    rw [← ih2]
     rw [Vector.toList_append]
     -- aesop?
     simp_all only [List.append_assoc]
@@ -150,7 +150,7 @@ theorem extractAcc_append_toList (acc: Vector σ n) (r: Regex σ):
     rw [Vector.toList_append]
     rw [ih2]
     rw [ih2]
-    rw [<- ih2]
+    rw [← ih2]
     rw [Vector.toList_append]
     -- aesop?
     simp_all only [List.append_assoc]
@@ -183,7 +183,7 @@ theorem extractAcc_take (acc: Vector σ l):
     (extractAcc r1 acc).2 := by
   apply Vector.eq
   rw [extract_take_toList]
-  rw [<- Vector.cast_toList]
+  rw [← Vector.cast_toList]
 
 theorem extractAcc_take_toList_fmap (acc: Vector σ l):
   (Vector.toList
@@ -230,4 +230,4 @@ theorem extractAcc_take_fmap (acc: Vector α l) (f: α → β):
     ) := by
   apply Vector.eq
   rw [extractAcc_take_toList_fmap]
-  rw [<- Vector.cast_toList]
+  rw [← Vector.cast_toList]

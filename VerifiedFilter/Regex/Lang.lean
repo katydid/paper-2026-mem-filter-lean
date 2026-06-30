@@ -22,24 +22,24 @@ def Lang.emptyset: Lang α := fun _ => False
 def Lang.emptystr: Lang α := fun xs => xs = []
 
 def Lang.symbol (Φ: σ → α → Prop) (s: σ): Lang α :=
-  fun xs => ∃ x, xs = [x] /\ Φ s x
+  fun xs => ∃ x, xs = [x] ∧ Φ s x
 
-def Lang.onlyif (cond : Prop) (P : Lang α): Lang α := fun xs => cond /\ P xs
+def Lang.onlyif (cond : Prop) (P : Lang α): Lang α := fun xs => cond ∧ P xs
 
-def Lang.or (P : Lang α) (Q : Lang α): Lang α := fun xs => P xs \/ Q xs
+def Lang.or (P : Lang α) (Q : Lang α): Lang α := fun xs => P xs ∨ Q xs
 
 def Lang.concat (P : Lang α) (Q : Lang α): Lang α := fun (xs : List α) =>
-  ∃ n: Fin (xs.length + 1), P (List.take n xs) /\ Q (List.drop n xs)
+  ∃ n: Fin (xs.length + 1), P (List.take n xs) ∧ Q (List.drop n xs)
 
 def Lang.star (R: Lang α) (xs: List α): Prop :=
   match xs with
   | [] => True
   | (x::xs') => ∃ (n: Fin xs.length),
-      R (x::List.take n xs') /\ Lang.star R (List.drop n xs')
+      R (x::List.take n xs') ∧ Lang.star R (List.drop n xs')
   termination_by xs.length
 
 def Lang.and {α: Type} (P : Lang α) (Q : Lang α) : Lang α :=
-  fun xs => P xs /\ Q xs
+  fun xs => P xs ∧ Q xs
 
 def Lang.compliment {α: Type} (R: Lang α): Lang α :=
   fun xs => (Not (R xs))
@@ -47,15 +47,15 @@ def Lang.compliment {α: Type} (R: Lang α): Lang α :=
 def Lang.interleave (P : Lang α) (Q : Lang α) (xs: List α): Prop :=
   ∃ (i: Fin (List.interleaves xs).length),
     P (List.get (List.interleaves xs) i).1
-    /\ Q (List.get (List.interleaves xs) i).2
+    ∧ Q (List.get (List.interleaves xs) i).2
 
 def Lang.xor {α: Type} (P: Lang α) (Q: Lang α): Lang α :=
-  fun xs =>  (P xs \/ Q xs) /\ (Not (P xs /\ Q xs))
+  fun xs =>  (P xs ∨ Q xs) ∧ (Not (P xs ∧ Q xs))
 
 -- Verifying the correctness of a filtering function, requires proving that the filtered elements are
 -- exactly those that both occur in the original list and belong to the language.
 def Lang.MemFilter {α: Type} (R: Lang α) (xs: List (List α)): Lang α :=
-  fun x => x ∈ xs /\ R x
+  fun x => x ∈ xs ∧ R x
 
 namespace Lang
 
@@ -67,10 +67,10 @@ def interleave_mem (P : Lang α) (Q : Lang α) (xs: List α): Prop :=
 
 def interleave_derive (P : Lang α) (Q : Lang α) (xs: List α): Prop :=
   match xs with
-  | [] => P [] /\ Q []
+  | [] => P [] ∧ Q []
   | (x::xs') =>
       (interleave_derive (P.derive x) Q xs')
-    \/ (interleave_derive (Q.derive x) P xs')
+    ∨ (interleave_derive (Q.derive x) P xs')
 
 theorem interleave_iff_interleave_mem (P Q : Lang α) (xs : List α) :
   interleave P Q xs ↔ interleave_mem P Q xs := by
@@ -172,10 +172,10 @@ theorem interleave_derive_is_interleave (P Q : Lang α) :
 
 def concat_append {α: Type} (P : Lang α) (Q : Lang α) : Lang α :=
   fun (xs : List α) =>
-    ∃ (xs1 : List α) (xs2 : List α), P xs1 /\ Q xs2 /\ xs = (xs1 ++ xs2)
+    ∃ (xs1 : List α) (xs2 : List α), P xs1 ∧ Q xs2 ∧ xs = (xs1 ++ xs2)
 
 theorem concat_iff_concat_append:
-  concat P Q xs <-> concat_append P Q xs := by
+  concat P Q xs ↔ concat_append P Q xs := by
   apply Iff.intro
   case mp =>
     intro h
@@ -219,12 +219,12 @@ inductive star_append {α: Type} (R: Lang α): Lang α where
   | zero: star_append R []
   | more: ∀ (x: α) (xs1 xs2 xs: List α),
     xs = (x::xs1) ++ xs2
-    -> R (x::xs1)
-    -> star_append R xs2
-    -> star_append R xs
+    → R (x::xs1)
+    → star_append R xs2
+    → star_append R xs
 
 theorem star_is_star_append:
-  star P xs <-> star_append P xs := by
+  star P xs ↔ star_append P xs := by
   apply Iff.intro
   case mp =>
     intro h
@@ -263,24 +263,24 @@ theorem star_is_star_append:
         apply star_is_star_append.mpr hq
   termination_by xs.length
 
-inductive All {α: Type} (P : α -> Prop) : (List α -> Prop) where
+inductive All {α: Type} (P : α → Prop) : (List α → Prop) where
   | nil : All P []
   | cons : ∀ {x xs} (_px : P x) (_pxs : All P xs), All P (x :: xs)
 
 def star_flatten {α: Type} (P : Lang α) : Lang α :=
   fun (w : List α) =>
-    ∃ (ws : List (List α)), (All P ws) /\ w = (List.flatten ws)
+    ∃ (ws : List (List α)), (All P ws) ∧ w = (List.flatten ws)
 
 inductive star_append_empty {α: Type} (R: Lang α): Lang α where
   | zero: star_append_empty R []
   | more: ∀ (xs1 xs2 xs: List α),
     xs = xs1 ++ xs2
-    -> R xs1
-    -> star_append_empty R xs2
-    -> star_append_empty R xs
+    → R xs1
+    → star_append_empty R xs2
+    → star_append_empty R xs
 
 theorem star_append_empty_is_star_append {xs: List α}:
-  star_append_empty P xs <-> star_append P xs := by
+  star_append_empty P xs ↔ star_append P xs := by
   apply Iff.intro
   case mp =>
     intro h
@@ -310,7 +310,7 @@ theorem star_append_empty_is_star_append {xs: List α}:
       · exact ih
 
 theorem star_append_empty_is_star_flatten {xs: List α}:
-  star_append_empty P xs <-> star_flatten P xs := by
+  star_append_empty P xs ↔ star_flatten P xs := by
   apply Iff.intro
   case mp =>
     intro h
@@ -355,17 +355,17 @@ theorem star_append_empty_is_star_flatten {xs: List α}:
       · exact ih'
 
 theorem star_append_is_star_flatten {xs: List α}:
-  star_append P xs <-> star_flatten P xs := by
-  rw [<- star_append_empty_is_star_append]
+  star_append P xs ↔ star_flatten P xs := by
+  rw [← star_append_empty_is_star_append]
   exact star_append_empty_is_star_flatten
 
 theorem star_is_star_flatten {xs: List α}:
-  star P xs <-> star_flatten P xs := by
-  rw [<- star_append_is_star_flatten]
+  star P xs ↔ star_flatten P xs := by
+  rw [← star_append_is_star_flatten]
   exact star_is_star_append
 
 theorem star_is_star_append_empty {xs: List α}:
-  star P xs <-> star_append_empty P xs := by
+  star P xs ↔ star_append_empty P xs := by
   rw [star_append_empty_is_star_append]
   exact star_is_star_append
 
@@ -395,7 +395,7 @@ theorem derives_step {α: Type} (R: Lang α) (x: α) (xs: List α):
   derives R (x :: xs) = derives (derive R x) xs := by
   rw [derive_is_derive']
   simp only [derive']
-  rw [<- derives_strings]
+  rw [← derives_strings]
   congr
 
 theorem null_derives {α: Type} (R: Lang α) (xs: List α):
@@ -434,7 +434,7 @@ theorem null_emptyset {α: Type}:
   rfl
 
 theorem null_iff_emptyset {α: Type}:
-  @null α emptyset <-> False := by
+  @null α emptyset ↔ False := by
   rw [null_emptyset]
 
 theorem not_null_if_emptyset {α: Type}:
@@ -442,7 +442,7 @@ theorem not_null_if_emptyset {α: Type}:
   null_iff_emptyset.mp
 
 theorem null_iff_emptystr {α: Type}:
-  @null α emptystr <-> True :=
+  @null α emptystr ↔ True :=
   Iff.intro
     (fun _ => True.intro)
     (fun _ => rfl)
@@ -456,7 +456,7 @@ theorem null_emptystr {α: Type}:
   rw [null_iff_emptystr]
 
 theorem null_iff_symbol {σ: Type} {α: Type} {Φ: σ → α → Prop} {s: σ}:
-  null (symbol Φ s) <-> False :=
+  null (symbol Φ s) ↔ False :=
   Iff.intro nofun nofun
 
 theorem not_null_if_symbol {σ: Type} {α: Type} {Φ: σ → α → Prop} {s: σ}:
@@ -468,15 +468,15 @@ theorem null_symbol {σ: Type} {α: Type} {Φ: σ → α → Prop} {s: σ}:
   rw [null_iff_symbol]
 
 theorem null_or {α: Type} {P Q: Lang α}:
-  null (or P Q) = ((null P) \/ (null Q)) :=
+  null (or P Q) = ((null P) ∨ (null Q)) :=
   rfl
 
 theorem null_iff_or {α: Type} {P Q: Lang α}:
-  null (or P Q) <-> ((null P) \/ (null Q)) := by
+  null (or P Q) ↔ ((null P) ∨ (null Q)) := by
   rw [null_or]
 
 theorem null_iff_concat {α: Type} {P Q: Lang α}:
-  null (concat P Q) <-> ((null P) /\ (null Q)) := by
+  null (concat P Q) ↔ ((null P) ∧ (null Q)) := by
   refine Iff.intro ?toFun ?invFun
   case toFun =>
     intro ⟨⟨n, hn⟩, hp, hq⟩
@@ -493,20 +493,20 @@ theorem null_iff_concat {α: Type} {P Q: Lang α}:
     exact And.intro hp hq
 
 theorem null_concat {α: Type} {P Q: Lang α}:
-  null (concat P Q) = ((null P) /\ (null Q)) := by
+  null (concat P Q) = ((null P) ∧ (null Q)) := by
   rw [null_iff_concat]
 
 theorem null_iff_interleave_idx {α: Type} {P Q: Lang α}:
-  null (interleave P Q) <-> ((null P) /\ (null Q)) := by
-  rw [<- Lang.interleave_derive_is_interleave]
+  null (interleave P Q) ↔ ((null P) ∧ (null Q)) := by
+  rw [← Lang.interleave_derive_is_interleave]
   rfl
 
 theorem null_interleave {α: Type} {P Q: Lang α}:
-  null (interleave P Q) = ((null P) /\ (null Q)) := by
+  null (interleave P Q) = ((null P) ∧ (null Q)) := by
   rw [null_iff_interleave_idx]
 
 theorem null_iff_star {α: Type} {R: Lang α}:
-  null (star R) <-> True :=
+  null (star R) ↔ True :=
   Iff.intro
     (fun _ => True.intro)
     (fun _ => by
@@ -519,7 +519,7 @@ theorem null_star {α: Type} {R: Lang α}:
   rw [null_iff_star]
 
 theorem null_and {α: Type} {P Q: Lang α}:
-  null (and P Q) = ((null P) /\ (null Q)) :=
+  null (and P Q) = ((null P) ∧ (null Q)) :=
   rfl
 
 theorem null_compliment {α: Type} {R: Lang α}:
@@ -527,7 +527,7 @@ theorem null_compliment {α: Type} {R: Lang α}:
   rfl
 
 theorem null_xor {α: Type} {P Q: Lang α}:
-  null (xor P Q) = (((null P) \/ (null Q)) /\ (Not ((null P) /\ (null Q)))):=
+  null (xor P Q) = (((null P) ∨ (null Q)) ∧ (Not ((null P) ∧ (null Q)))):=
   rfl
 
 -- Theorems: derive
@@ -537,7 +537,7 @@ theorem derive_emptyset {α: Type} {a: α}:
   rfl
 
 theorem derive_iff_emptystr {α: Type} {a: α} {w: List α}:
-  (derive emptystr a) w <-> emptyset w :=
+  (derive emptystr a) w ↔ emptyset w :=
   Iff.intro nofun nofun
 
 theorem derive_emptystr {α: Type} {a: α}:
@@ -546,7 +546,7 @@ theorem derive_emptystr {α: Type} {a: α}:
   rw [derive_iff_emptystr]
 
 theorem derive_iff_symbol {α: Type} {Φ: σ → α → Prop} {x: α} {xs: List α}:
-  (derive (symbol Φ s) x) xs <-> (onlyif (Φ s x) emptystr) xs := by
+  (derive (symbol Φ s) x) xs ↔ (onlyif (Φ s x) emptystr) xs := by
   rw [derive_is_derive']
   simp only [derive', derives, List.singleton_append]
   simp only [onlyif, emptystr]
@@ -558,7 +558,7 @@ theorem derive_iff_symbol {α: Type} {Φ: σ → α → Prop} {x: α} {xs: List 
     simp only [List.cons.injEq] at D
     match D with
     | And.intro (And.intro hxx' hxs) hpx =>
-    rw [<- hxx'] at hpx
+    rw [← hxx'] at hpx
     exact And.intro hpx hxs
   case invFun =>
     intro ⟨ hpx , hxs  ⟩
@@ -581,7 +581,7 @@ theorem derive_onlyif {α: Type} {a: α} {s: Prop} {P: Lang α}:
   rfl
 
 theorem derive_iff_star {α: Type} {x: α} {R: Lang α} {xs: List α}:
-  (derive (star R) x) xs <-> (concat (derive R x) (star R)) xs := by
+  (derive (star R) x) xs ↔ (concat (derive R x) (star R)) xs := by
   rw [derive_is_derive']
   refine Iff.intro ?toFun ?invFun
   case toFun =>
@@ -616,9 +616,9 @@ theorem derive_interleave_derive {α: Type} {x: α} {P Q: Lang α}:
 
 theorem derive_interleave {α: Type} {x: α} {P Q: Lang α}:
   (derive (interleave P Q) x) = (or (interleave (derive P x) Q) (interleave (derive Q x) P)) := by
-  rw [<- interleave_derive_is_interleave]
-  rw [<- interleave_derive_is_interleave]
-  rw [<- interleave_derive_is_interleave]
+  rw [← interleave_derive_is_interleave]
+  rw [← interleave_derive_is_interleave]
+  rw [← interleave_derive_is_interleave]
   rfl
 
 theorem derive_and {α: Type} {a: α} {P Q: Lang α}:
@@ -634,7 +634,7 @@ theorem derive_xor {α: Type} {a: α} {P Q: Lang α}:
   rfl
 
 theorem derive_iff_concat {α: Type} {x: α} {P Q: Lang α} {xs: List α}:
-  (derive (concat P Q) x) xs <->
+  (derive (concat P Q) x) xs ↔
     (or (concat (derive P x) Q) (onlyif (null P) (derive Q x))) xs := by
   rw [derive_is_derive']
   apply Iff.intro
@@ -801,7 +801,7 @@ def onlyif_false {cond: Prop} {l: List α → Prop} (condIsFalse: ¬cond):
     nomatch h
 
 theorem simp_onlyif_and {α: Type} (cond1 cond2 : Prop) (P : Lang α):
-  onlyif (cond1 /\ cond2) P = onlyif cond1 (onlyif cond2 P) := by
+  onlyif (cond1 ∧ cond2) P = onlyif cond1 (onlyif cond2 P) := by
   unfold onlyif
   funext xs
   -- aesop?

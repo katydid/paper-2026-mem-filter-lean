@@ -19,11 +19,11 @@ open Regex.Memoize
 open Hedge
 
 def Regex.Memoize.deriveM [DecidableEq σ] [Hashable σ] [Monad m] [MemoizeKatydid m σ]
-  (Φ': σ -> Bool) (Φ: (s: σ) → m { b // b = Φ' s }) (r: Regex σ):
+  (Φ': σ → Bool) (Φ: (s: σ) → m { b // b = Φ' s }) (r: Regex σ):
   m {dr: Regex σ // dr = Regex.Katydid.derive Φ' r } := do
-  let ⟨symbols, hsymbols⟩ <- MemoizeKatydid.enterM r
-  let bools <- Vector.mapMemoize Φ' Φ symbols
-  let ⟨res, hres⟩ <- MemoizeKatydid.leaveM ⟨r, bools⟩
+  let ⟨symbols, hsymbols⟩ ← MemoizeKatydid.enterM r
+  let bools ← Vector.mapMemoize Φ' Φ symbols
+  let ⟨res, hres⟩ ← MemoizeKatydid.leaveM ⟨r, bools⟩
   let h: res = Regex.Katydid.derive Φ' r := by
     simp only at hres
     subst_eqs
@@ -63,7 +63,7 @@ def Grammar.Memoize.derive' [DecidableEq φ] [Hashable φ] [Monad m] [MemoizeKat
             rfl
           ))
   )
-  let dr <- Regex.Memoize.deriveM (pureNodePred G Φ node) nodePred r
+  let dr ← Regex.Memoize.deriveM (pureNodePred G Φ node) nodePred r
   pure (Subtype.mk dr.val (by
     obtain ⟨dr, hdr⟩ := dr
     simp only
@@ -85,7 +85,7 @@ def Grammar.Memoize.derive [DecidableEq φ] [Hashable φ] [Monad m] [MemoizeKaty
 def Grammar.Memoize.validate [DecidableEq φ] [Hashable φ] [Monad m] [MemoizeKatydid m (φ × Ref n)]
   (G: Grammar n φ) (Φ: φ → α → Bool) (nodes: Hedge α)
   : m { valid: Bool // valid = Grammar.Katydid.validate G Φ nodes } := do
-  let dr <- List.foldlMemoize (Grammar.Katydid.derive G Φ) (Grammar.Memoize.derive G Φ) G.start nodes
+  let dr ← List.foldlMemoize (Grammar.Katydid.derive G Φ) (Grammar.Memoize.derive G Φ) G.start nodes
   pure (Subtype.mk (Regex.null dr.val) (by
     obtain ⟨dr, hdr⟩ := dr
     simp only

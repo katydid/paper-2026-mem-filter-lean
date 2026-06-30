@@ -6,7 +6,7 @@ import VerifiedFilter.Parser.Hint
 import VerifiedFilter.Parser.Token
 
 -- The Monad m is usually a State with a stack and some type of error return.
-class Parser (m: Type -> Type u) (α: outParam Type) where
+class Parser (m: Type → Type u) (α: outParam Type) where
   next: m Hint
   token: m α
   skip: m Unit

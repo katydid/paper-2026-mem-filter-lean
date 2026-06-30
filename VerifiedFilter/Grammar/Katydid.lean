@@ -157,7 +157,7 @@ theorem Grammar.Katydid.derive_xor {α: Type} (G: Grammar n φ) (Φ: φ → α �
 
 theorem Grammar.Katydid.and_start {α: Type} (G: Grammar n φ) (Φ: φ → α → Prop) [DecidableRel Φ] (label: α) (children: Hedge α):
   ((List.foldl (derive G (decideRel Φ)) (if decideRel Φ p label then G.lookup ref else Regex.emptyset) children).null = true)
-  = (Φ p label /\ ((List.foldl (derive G (decideRel Φ)) (G.lookup ref) children).null = true)) := by
+  = (Φ p label ∧ ((List.foldl (derive G (decideRel Φ)) (G.lookup ref) children).null = true)) := by
   generalize (G.lookup ref) = r
   split
   case isTrue h =>
@@ -256,8 +256,8 @@ theorem derive_commutes (G: Grammar n φ) Φ [DecidableRel Φ]
     rw [Grammar.denote_concat]
     rw [Grammar.denote_onlyif]
     rw [Lang.derive_concat]
-    rw [<- ih1]
-    rw [<- ih2]
+    rw [← ih1]
+    rw [← ih2]
     congr
     apply Grammar.null_commutes
   | star r1 ih1 =>
@@ -334,10 +334,10 @@ theorem derives_commutes (G: Grammar n φ) (Φ: φ → α → Prop) [DecidableRe
 theorem validate_commutes (G: Grammar n φ) Φ [DecidableRel Φ] (nodes: Hedge α):
   (validate G (decideRel Φ) nodes = true) = Grammar.denote G Φ nodes := by
   unfold Grammar.denote
-  rw [<- Lang.validate (Grammar.Rule.denote G Φ G.start) nodes]
+  rw [← Lang.validate (Grammar.Rule.denote G Φ G.start) nodes]
   unfold validate
-  rw [<- derives_commutes]
-  rw [<- Grammar.null_commutes]
+  rw [← derives_commutes]
+  rw [← Grammar.null_commutes]
 
 -- Using validate_commutes we can prove mem_filter.
 theorem mem_filter (Φ: φ → α → Prop) [DecidableRel Φ] (G: Grammar n φ) (xss: List (Hedge α)) :
@@ -350,7 +350,7 @@ theorem mem_filter (Φ: φ → α → Prop) [DecidableRel Φ] (G: Grammar n φ) 
   case mp =>
     intro ⟨hxs, hd⟩
     apply And.intro hxs
-    rw [<- Grammar.Katydid.validate_commutes]
+    rw [← Grammar.Katydid.validate_commutes]
     assumption
   case mpr =>
     intro ⟨hxs, hd⟩

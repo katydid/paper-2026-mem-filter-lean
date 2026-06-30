@@ -36,8 +36,8 @@ def Regex.Katydid.validate (Φ: σ → α → Bool) (r: Regex σ) (xs: List α):
 
 theorem Regex.Katydid.derive_is_Regex_derive (Φ: σ → α → Bool) (r: Regex σ) a:
   Regex.Katydid.derive (flip Φ a) r = Regex.derive Φ r a := by
-  simp only [Katydid.derive, enter, leave, <- Vector.map_zip_is_zip_map, flip]
-  rw [<- Regex.extract_replace_is_map]
+  simp only [Katydid.derive, enter, leave, ← Vector.map_zip_is_zip_map, flip]
+  rw [← Regex.extract_replace_is_map]
   rw [Regex.Point.regex_derive_is_point_derive]
 
 namespace Regex.Katydid
@@ -56,12 +56,12 @@ theorem derive_commutesb {σ: Type} {α: Type} (Φ: σ → α → Bool) (r: Rege
   Regex.denote (fun s a => Φ s a) (Katydid.derive (flip Φ a) r)
   = Lang.derive (Regex.denote (fun s a => Φ s a) r) a := by
   rw [Regex.Katydid.derive_is_Regex_derive]
-  rw [<- Regex.derive_commutesb]
+  rw [← Regex.derive_commutesb]
 
 theorem derive_commutes {σ: Type} {α: Type} (Φ: σ → α → Prop) [DecidableRel Φ] (r: Regex σ) (a: α):
   denote Φ (Katydid.derive (flip (decideRel Φ) a) r) = Lang.derive (denote Φ r) a := by
   rw [Regex.Katydid.derive_is_Regex_derive]
-  rw [<- Regex.derive_commutes]
+  rw [← Regex.derive_commutes]
   congr
 
 theorem derives_commutes {α: Type} (Φ: σ → α → Prop) [DecidableRel Φ] (r: Regex σ) (xs: List α):
@@ -79,10 +79,10 @@ theorem derives_commutes {α: Type} (Φ: σ → α → Prop) [DecidableRel Φ] (
 
 theorem validate_commutes {α: Type} (Φ: σ → α → Prop) [DecidableRel Φ] (r: Regex σ) (xs: List α):
   (Katydid.validate (decideRel Φ) r xs = true) = (denote Φ r) xs := by
-  rw [<- Lang.validate (denote Φ r) xs]
+  rw [← Lang.validate (denote Φ r) xs]
   unfold validate
-  rw [<- derives_commutes]
-  rw [<- null_commutes]
+  rw [← derives_commutes]
+  rw [← null_commutes]
 
 def filter (Φ: σ → α → Bool) (r: Regex σ) (xss: List (List α)): List (List α) :=
   List.filter (Katydid.validate Φ r) xss
@@ -97,7 +97,7 @@ theorem mem_filter (Φ: σ → α → Prop) [DecidableRel Φ] (r: Regex σ) (xss
   case mp =>
     intro ⟨hxs, hd⟩
     apply And.intro hxs
-    rw [<- validate_commutes]
+    rw [← validate_commutes]
     assumption
   case mpr =>
     intro ⟨hxs, hd⟩

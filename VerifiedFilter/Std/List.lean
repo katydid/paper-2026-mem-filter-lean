@@ -181,7 +181,7 @@ theorem interleaves_contains_itself_fst_idx (xs: List α):
   exact hp_eq
 
 theorem interleaves_sizeOf1 (xs: List α) [SizeOf α]:
-  ∀ p ∈ interleaves xs, p.1 = xs \/ sizeOf p.1 < sizeOf xs := by
+  ∀ p ∈ interleaves xs, p.1 = xs ∨ sizeOf p.1 < sizeOf xs := by
   induction xs with
   | nil =>
     intro p hp
@@ -210,11 +210,11 @@ theorem interleaves_sizeOf1 (xs: List α) [SizeOf α]:
         exact sizeOf_lt_cons_lt x h_lt
 
 theorem interleaves_sizeOf1_idx (xs: List α) [SizeOf α] (i: Fin (List.interleaves xs).length):
-  ((List.interleaves xs).get i).1 = xs \/ sizeOf ((List.interleaves xs).get i).1 < sizeOf xs := by
+  ((List.interleaves xs).get i).1 = xs ∨ sizeOf ((List.interleaves xs).get i).1 < sizeOf xs := by
   exact interleaves_sizeOf1 xs ((interleaves xs).get i) (get_mem _ _)
 
 theorem interleaves_sizeOf2 [SizeOf α] (xs: List α):
-  ∀ p ∈ interleaves xs, p.2 = xs \/ sizeOf p.2 < sizeOf xs := by
+  ∀ p ∈ interleaves xs, p.2 = xs ∨ sizeOf p.2 < sizeOf xs := by
   induction xs with
   | nil =>
     intro p hp
@@ -243,5 +243,5 @@ theorem interleaves_sizeOf2 [SizeOf α] (xs: List α):
         exact sizeOf_cons_lt_cons x h_lt
 
 theorem interleaves_sizeOf2_idx [SizeOf α] (xs: List α) (i: Fin (List.interleaves xs).length):
-  ((List.interleaves xs).get i).2 = xs \/ sizeOf ((List.interleaves xs).get i).2 < sizeOf xs := by
+  ((List.interleaves xs).get i).2 = xs ∨ sizeOf ((List.interleaves xs).get i).2 < sizeOf xs := by
   exact interleaves_sizeOf2 xs ((interleaves xs).get i) (get_mem _ _)

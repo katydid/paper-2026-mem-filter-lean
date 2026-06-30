@@ -15,10 +15,10 @@ open Regex.Memoize
 open Pred
 open Regex
 
-def validate [DecidableEq φ] [Hashable φ] (G: Grammar n φ) (Φ: φ -> α -> Bool) (nodes: Hedge α): Bool :=
+def validate [DecidableEq φ] [Hashable φ] (G: Grammar n φ) (Φ: φ → α → Bool) (nodes: Hedge α): Bool :=
   StateMemoize.Grammar.validate.run memoizeState.init G Φ nodes
 
-def filter [DecidableEq φ] [Hashable φ] (G: Grammar n φ) (Φ: φ -> α -> Bool) (hedges: List (Hedge α)): List (Hedge α) :=
+def filter [DecidableEq φ] [Hashable φ] (G: Grammar n φ) (Φ: φ → α → Bool) (hedges: List (Hedge α)): List (Hedge α) :=
   StateMemoize.Grammar.filter.run memoizeState.init G Φ hedges
 
 def eq (v: α × Fin n) := symbol (Pred.Compare.Pred.eq v.1, v.2)

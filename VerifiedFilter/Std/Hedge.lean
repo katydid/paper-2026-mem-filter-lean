@@ -117,7 +117,7 @@ end
 instance[DecidableEq α] : DecidableEq (Node α) := Node.hasDecEq
 
 local elab "simp_sizeOf" : tactic => do
-  Lean.Elab.Tactic.evalTactic (<- `(tactic|
+  Lean.Elab.Tactic.evalTactic (← `(tactic|
     simp only [Node.node.sizeOf_spec, List.cons.sizeOf_spec, List.nil.sizeOf_spec, Subtype.mk.sizeOf_spec])
   )
 
@@ -129,7 +129,7 @@ private theorem take_eq_self_iff (xs : List α) {n : Nat} : xs.take n = xs ↔ x
   ⟨fun h ↦ by rw [← h]; simp; omega, List.take_of_length_le⟩
 
 theorem sizeOf_take (n: Nat) (xs: Hedge α):
-  List.take n xs = xs \/ sizeOf (List.take n xs) < sizeOf xs := by
+  List.take n xs = xs ∨ sizeOf (List.take n xs) < sizeOf xs := by
   rw [take_eq_self_iff]
   by_cases (List.length xs > n)
   case pos h =>
@@ -163,16 +163,16 @@ theorem sizeOf_take (n: Nat) (xs: Hedge α):
     assumption
 
 theorem sizeOf_drop (n: Nat) (xs: Hedge α):
-  List.drop n xs = xs \/ sizeOf (List.drop n xs) < sizeOf xs := by
+  List.drop n xs = xs ∨ sizeOf (List.drop n xs) < sizeOf xs := by
   have h := List.drop_exists (xs := xs) (n := n)
   cases h with
   | intro ys h =>
-  have h' : List.drop n xs = xs <-> List.drop n xs = ys ++ List.drop n xs := by
-    rw [<- h]
+  have h' : List.drop n xs = xs ↔ List.drop n xs = ys ++ List.drop n xs := by
+    rw [← h]
   rw [h']
   clear h'
   have h' : sizeOf xs = sizeOf (ys ++ List.drop n xs) := by
-    rw [<- h]
+    rw [← h]
   rw [h']
   cases ys with
   | nil =>

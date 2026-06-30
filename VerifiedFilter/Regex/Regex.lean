@@ -29,20 +29,20 @@ def Regex.denote (Φ: σ → α → Prop) (r: Regex σ) (xs: List α): Prop :=
   | emptystr => xs = []
   | symbol s => match xs with
     | [x] => Φ s x | _ => False
-  | or r1 r2 => (denote Φ r1 xs) \/ (denote Φ r2 xs)
+  | or r1 r2 => (denote Φ r1 xs) ∨ (denote Φ r2 xs)
   | concat r1 r2 => ∃ (i: Fin (xs.length + 1)),
-      (denote Φ r1 (List.take i xs)) /\ (denote Φ r2 (List.drop i xs))
+      (denote Φ r1 (List.take i xs)) ∧ (denote Φ r2 (List.drop i xs))
   | star r1 => match xs with
     | [] => True
     | (x::xs') => ∃ (i: Fin xs.length),
                         (denote Φ r1 (x::List.take i xs'))
-                        /\ (denote Φ (Regex.star r1) (List.drop i xs'))
+                        ∧ (denote Φ (Regex.star r1) (List.drop i xs'))
   | interleave r1 r2 => ∃ (i: Fin (List.interleaves xs).length),
         (denote Φ r1 (List.get (List.interleaves xs) i).1)
-     /\ (denote Φ r2 (List.get (List.interleaves xs) i).2)
-  | and r1 r2 => (denote Φ r1 xs) /\ (denote Φ r2 xs)
+     ∧ (denote Φ r2 (List.get (List.interleaves xs) i).2)
+  | and r1 r2 => (denote Φ r1 xs) ∧ (denote Φ r2 xs)
   | compliment r1 => Not (denote Φ r1 xs)
-  | xor r1 r2 => ((denote Φ r1 xs) \/ (denote Φ r2 xs)) /\ (Not ((denote Φ r1 xs) /\ (denote Φ r2 xs)))
+  | xor r1 r2 => ((denote Φ r1 xs) ∨ (denote Φ r2 xs)) ∧ (Not ((denote Φ r1 xs) ∧ (denote Φ r2 xs)))
   termination_by (r, xs.length)
 
 namespace Regex
@@ -201,7 +201,7 @@ theorem denote_star_iff {α: Type} {σ: Type} (Φ: σ → α → Prop) (r1: Rege
       obtain ⟨⟨i, hi⟩, h1, h2⟩ := h
       exists ⟨i, hi⟩
       apply And.intro h1
-      rw [<- (denote_star_iff Φ r1 (List.drop i xs))]
+      rw [← (denote_star_iff Φ r1 (List.drop i xs))]
       simp only at h2
       exact h2
     case mpr =>
@@ -266,8 +266,8 @@ theorem null_commutes {σ: Type} {α: Type} (Φ: σ → α → Prop) (r: Regex �
   | or r1 r2 ih1 ih2 =>
     unfold denote
     unfold null
-    rw [<- ih1]
-    rw [<- ih2]
+    rw [← ih1]
+    rw [← ih2]
     rw [Bool.or_eq_true]
   | concat r1 r2 ih1 ih2 =>
     unfold denote
@@ -283,8 +283,8 @@ theorem null_commutes {σ: Type} {α: Type} (Φ: σ → α → Prop) (r: Regex �
     simp only
   | interleave r1 r2 ih1 ih2 =>
     unfold denote
-    rw [<- Lang.interleave]
-    rw [<- Lang.interleave_derive_is_interleave]
+    rw [← Lang.interleave]
+    rw [← Lang.interleave_derive_is_interleave]
     rw [Lang.interleave_derive]
     unfold null
     rw [Bool.and_eq_true r1.null r2.null]
@@ -293,8 +293,8 @@ theorem null_commutes {σ: Type} {α: Type} (Φ: σ → α → Prop) (r: Regex �
   | and r1 r2 ih1 ih2 =>
     unfold denote
     unfold null
-    rw [<- ih1]
-    rw [<- ih2]
+    rw [← ih1]
+    rw [← ih2]
     rw [Bool.and_eq_true]
   | compliment r1 ih1 =>
     unfold denote
@@ -309,8 +309,8 @@ theorem null_commutes {σ: Type} {α: Type} (Φ: σ → α → Prop) (r: Regex �
   | xor r1 r2 ih1 ih2 =>
     unfold denote
     unfold null
-    rw [<- ih1]
-    rw [<- ih2]
+    rw [← ih1]
+    rw [← ih2]
     rw [Bool.and_eq_true]
     grind
 
@@ -339,8 +339,8 @@ theorem derive_commutes {σ: Type} {α: Type} (Φ: σ → α → Prop) [Decidabl
   | concat r1 r2 ih1 ih2 =>
     simp only [denote_concat, denote_or, derive]
     rw [Lang.derive_concat]
-    rw [<- ih1]
-    rw [<- ih2]
+    rw [← ih1]
+    rw [← ih2]
     rw [denote_onlyif]
     congr
     rw [null_commutes]
@@ -351,8 +351,8 @@ theorem derive_commutes {σ: Type} {α: Type} (Φ: σ → α → Prop) [Decidabl
   | interleave r1 r2 ih1 ih2 =>
     simp only [denote_interleave, derive]
     simp only [Lang.derive_interleave]
-    rw [<- ih1]
-    rw [<- ih2]
+    rw [← ih1]
+    rw [← ih2]
     simp only [denote_or]
     congr
     · simp only [denote_interleave]
@@ -379,7 +379,7 @@ theorem derive_commutes {σ: Type} {α: Type} (Φ: σ → α → Prop) [Decidabl
 
 theorem derive_commutesb {σ: Type} {α: Type} (Φ: σ → α → Bool) (r: Regex σ) (x: α):
   denote (fun s a => Φ s a) (derive Φ r x) = Lang.derive (denote (fun s a => Φ s a) r) x := by
-  rw [<- derive_commutes]
+  rw [← derive_commutes]
   congr
   funext s a
   simp only [Bool.decide_eq_true]
@@ -399,10 +399,10 @@ theorem derives_commutes {α: Type} (Φ: σ → α → Prop) [DecidableRel Φ] (
 
 theorem validate_commutes {α: Type} (Φ: σ → α → Prop) [DecidableRel Φ] (r: Regex σ) (xs: List α):
   (validate (decideRel Φ) r xs = true) = (denote Φ r) xs := by
-  rw [<- Lang.validate (denote Φ r) xs]
+  rw [← Lang.validate (denote Φ r) xs]
   unfold validate
-  rw [<- derives_commutes]
-  rw [<- null_commutes]
+  rw [← derives_commutes]
+  rw [← null_commutes]
 
 -- decidableDenote shows that the derivative algorithm is decidable
 -- https://leanprover.zulipchat.com/#narrow/channel/270676-lean4/topic/restricting.20axioms
@@ -431,7 +431,7 @@ theorem mem_filter (Φ: σ → α → Prop) [DecidableRel Φ] (r: Regex σ) (xss
   case mp =>
     intro ⟨hxs, hd⟩
     apply And.intro hxs
-    rw [<- validate_commutes]
+    rw [← validate_commutes]
     assumption
   case mpr =>
     intro ⟨hxs, hd⟩

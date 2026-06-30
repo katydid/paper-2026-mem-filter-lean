@@ -13,16 +13,16 @@ import VerifiedFilter.Parser.HedgeParser
 namespace EncodeTree
 
 partial def encode [Monad m] [MonadExcept String m] [Parser m α]: m (Hedge α) := do
-  match <- Parser.next with
+  match ← Parser.next with
   | Hint.enter =>
-    let children <- encode
-    let siblings <- encode
+    let children ← encode
+    let siblings ← encode
     return children ++ siblings
   | Hint.value =>
-    let name <- Parser.token
-    _ <- Parser.next
-    let children <- encode
-    let siblings <- encode
+    let name ← Parser.token
+    _ ← Parser.next
+    let children ← encode
+    let siblings ← encode
     return (Hedge.Node.node name children) :: siblings
   | _ => return []
 

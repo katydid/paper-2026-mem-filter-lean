@@ -204,22 +204,22 @@ def Rule.denote (G: Grammar n φ) (Φ: φ → α → Prop)
   | Regex.emptystr => nodes = []
   | Regex.symbol (pred, ref) => match nodes with
     | [node] => (Φ pred node.getLabel)
-                /\ denote G Φ (G.lookup ref) node.getChildren
+                 ∧ denote G Φ (G.lookup ref) node.getChildren
     | _ => False
-  | Regex.or r1 r2 => (denote G Φ r1 nodes) \/ (denote G Φ r2 nodes)
+  | Regex.or r1 r2 => (denote G Φ r1 nodes) ∨ (denote G Φ r2 nodes)
   | Regex.concat r1 r2 => ∃ (i: Fin (nodes.length + 1)),
-      (denote G Φ r1 (List.take i nodes)) /\ (denote G Φ r2 (List.drop i nodes))
+      (denote G Φ r1 (List.take i nodes)) ∧ (denote G Φ r2 (List.drop i nodes))
   | Regex.star r1 => match nodes with
     | [] => True
     | (node::nodes') => ∃ (i: Fin nodes.length),
                         (denote G Φ r1 (node::List.take i nodes'))
-                        /\ (denote G Φ (Regex.star r1) (List.drop i nodes'))
+                        ∧ (denote G Φ (Regex.star r1) (List.drop i nodes'))
   | Regex.interleave r1 r2 => ∃ (i: Fin (List.interleaves nodes).length),
         (denote G Φ r1 (List.get (List.interleaves nodes) i).1)
-     /\ (denote G Φ r2 (List.get (List.interleaves nodes) i).2)
-  | Regex.and r1 r2 => (denote G Φ r1 nodes) /\ (denote G Φ r2 nodes)
+     ∧ (denote G Φ r2 (List.get (List.interleaves nodes) i).2)
+  | Regex.and r1 r2 => (denote G Φ r1 nodes) ∧ (denote G Φ r2 nodes)
   | Regex.compliment r1 => Not (denote G Φ r1 nodes)
-  | Regex.xor r1 r2 => ((denote G Φ r1 nodes) \/ (denote G Φ r2 nodes)) /\ (Not ((denote G Φ r1 nodes) /\ (denote G Φ r2 nodes)))
+  | Regex.xor r1 r2 => ((denote G Φ r1 nodes) ∨ (denote G Φ r2 nodes)) ∧ (Not ((denote G Φ r1 nodes) ∧ (denote G Φ r2 nodes)))
   termination_by (nodes, r)
   decreasing_by
     · apply decreasing_symbol
@@ -336,7 +336,7 @@ theorem unfold_denote_star {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → �
     | (x'::xs') =>
        ∃ (n: Fin xs.length),
          (Rule.denote G Φ r (x'::List.take n xs'))
-      /\ (Rule.denote G Φ (Regex.star r) (List.drop n xs'))) := by
+      ∧ (Rule.denote G Φ (Regex.star r) (List.drop n xs'))) := by
   cases xs with
   | nil =>
     simp [Rule.denote]
@@ -348,8 +348,8 @@ theorem unfold_denote_star {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → �
       simp only [Rule.denote]
 
 theorem denote_star_iff' {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Prop) (r: Regex (φ × Ref n)) (xs: Hedge α):
-  Rule.denote G (fun p x' => Φ p x') (Regex.star r) xs <-> Lang.star (Rule.denote G (fun p x' => Φ p x') r) xs := by
-  rw [<- eq_iff_iff]
+  Rule.denote G (fun p x' => Φ p x') (Regex.star r) xs ↔ Lang.star (Rule.denote G (fun p x' => Φ p x') r) xs := by
+  rw [← eq_iff_iff]
   unfold Lang.star
   rw [unfold_denote_star]
   cases xs with
@@ -359,17 +359,17 @@ theorem denote_star_iff' {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α 
     simp only
     congr
     ext n
-    rw [<- eq_iff_iff]
+    rw [← eq_iff_iff]
     congr
     simp only [List.length_cons, eq_iff_iff]
-    rw [<- denote_star_iff']
+    rw [← denote_star_iff']
   termination_by xs.length
   decreasing_by
     obtain ⟨n, hn⟩ := n
     apply List.length_drop_lt_cons
 
 theorem denote_star_iff {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Prop) (r: Regex (φ × Ref n)) (xs: Hedge α):
-  Rule.denote G Φ (Regex.star r) xs <-> Lang.star (Rule.denote G Φ r) xs := by
+  Rule.denote G Φ (Regex.star r) xs ↔ Lang.star (Rule.denote G Φ r) xs := by
   rw [denote_star_iff']
 
 theorem denote_star {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Prop) (r: Regex (φ × Ref n)):
@@ -415,16 +415,16 @@ theorem null_commutes (G: Grammar n φ) (Φ: φ → α → Prop) [DecidableRel �
     rw [denote_or]
     rw [Lang.null_or]
     unfold Regex.null
-    rw [<- ih1]
-    rw [<- ih2]
+    rw [← ih1]
+    rw [← ih2]
     unfold Regex.null
     rw [Bool.or_eq_true]
   | concat r1 r2 ih1 ih2 =>
     rw [denote_concat]
     rw [Lang.null_concat]
     unfold Regex.null
-    rw [<- ih1]
-    rw [<- ih2]
+    rw [← ih1]
+    rw [← ih2]
     unfold Regex.null
     rw [Bool.and_eq_true]
   | star r1 ih1 =>

@@ -56,8 +56,8 @@ partial def Grammar.Fused.derive
   match ← Parser.next with
   | Hint.value =>
     let ⟨enterSymbols, _⟩ ← MemoizeKatydids.entersM ⟨l, rs⟩
-    let childrs <- Vector.mapM (xs := enterSymbols) (fun ⟨pred, ref⟩ =>
-      do if <- Φ pred Parser.token then return G.lookup ref else return Regex.emptyset)
+    let childrs ← Vector.mapM (xs := enterSymbols) (fun ⟨pred, ref⟩ =>
+      do if ← Φ pred Parser.token then return G.lookup ref else return Regex.emptyset)
     let childbs ← Vector.map Regex.null <$> Fused.derive G Φ childrs -- handle children
     let drs               ← MemoizeKatydids.leavesM ⟨l, rs, childbs⟩
     Fused.derive G Φ drs -- handle siblings

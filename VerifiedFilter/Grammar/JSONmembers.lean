@@ -137,7 +137,7 @@ def Grammar.JSONmembers.derive (G: Grammar n φ) (Φ: φ → α → Bool)
   | Regex.emptystr => Regex.emptyset
   | Regex.symbol (pred, ref) => let ⟨label, children⟩ := node
     Regex.onlyif (Φ pred label
-      /\ Regex.null (List.foldl (derive G Φ) (G.lookup ref) children)
+      ∧ Regex.null (List.foldl (derive G Φ) (G.lookup ref) children)
     ) Regex.emptystr
   | Regex.or r1 r2 =>
     Regex.or (derive G Φ r1 node) (derive G Φ r2 node)
@@ -251,8 +251,8 @@ theorem Grammar.JSONmembers.derive_commutes (G: Grammar n φ) Φ [DecidableRel �
     rw [Grammar.denote_concat]
     rw [Grammar.denote_onlyif]
     rw [Lang.derive_concat]
-    rw [<- ih1]
-    rw [<- ih2]
+    rw [← ih1]
+    rw [← ih2]
     congr
     rw [Grammar.null_commutes (Φ := Φ)]
   | case6 x r1 ih1 => -- star
@@ -266,8 +266,8 @@ theorem Grammar.JSONmembers.derive_commutes (G: Grammar n φ) Φ [DecidableRel �
     rw [Grammar.denote_or]
     rw [Grammar.denote_interleave]
     rw [Lang.derive_interleave]
-    rw [<- ih1]
-    rw [<- ih2]
+    rw [← ih1]
+    rw [← ih2]
     congr
     rw [Grammar.denote_interleave]
   | case8 x r1 r2 ih1 ih2 => -- and
@@ -309,10 +309,10 @@ theorem Grammar.JSONmembers.derives_commutes (G: Grammar n φ) (Φ: φ → α �
 theorem Grammar.JSONmembers.validate_commutes (G: Grammar n φ) (Φ: φ → α → Prop) [DecidableRel Φ] (nodes: Hedge α):
   (validate G (decideRel Φ) nodes = true) = (Grammar.denote G Φ) nodes := by
   unfold Grammar.denote
-  rw [<- Lang.validate (Grammar.Rule.denote G Φ G.start) nodes]
+  rw [← Lang.validate (Grammar.Rule.denote G Φ G.start) nodes]
   unfold validate
-  rw [<- derives_commutes]
-  rw [<- Grammar.null_commutes]
+  rw [← derives_commutes]
+  rw [← Grammar.null_commutes]
 
 -- Using validate_commutes we can prove mem_filter.
 theorem Grammar.JSONmembers.mem_filter (Φ: φ → α → Prop) [DecidableRel Φ] (G: Grammar n φ) (xss: List (Hedge α)) :
@@ -325,7 +325,7 @@ theorem Grammar.JSONmembers.mem_filter (Φ: φ → α → Prop) [DecidableRel Φ
   case mp =>
     intro ⟨hxs, hd⟩
     apply And.intro hxs
-    rw [<- Grammar.JSONmembers.validate_commutes]
+    rw [← Grammar.JSONmembers.validate_commutes]
     assumption
   case mpr =>
     intro ⟨hxs, hd⟩

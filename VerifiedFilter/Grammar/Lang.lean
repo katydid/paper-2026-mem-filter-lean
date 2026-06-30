@@ -11,13 +11,13 @@ def node_match {α: Type} (φ: α → Bool) (R: Lang (Hedge.Node α)): Lang (Hed
   fun xs =>
     match xs with
     | [Hedge.Node.node label children] =>
-      φ label /\ R children
+      φ label ∧ R children
     | _ => False
 
 -- The denotation of node that we would have liked to use, if match was not required for termination proof purposes.
 -- Luckily we still get to use this definition in a lot of proofs.
 def node {α: Type} (φ: α → Bool) (R: Lang (Hedge.Node α)): Lang (Hedge.Node α) :=
-  fun xs => ∃ label children, xs = [Hedge.Node.node label children] /\ φ label /\ R children
+  fun xs => ∃ label children, xs = [Hedge.Node.node label children] ∧ φ label ∧ R children
 
 -- We show that the two definitions of denotation of node is equivalent.
 theorem node_is_node_match:
@@ -51,7 +51,7 @@ theorem node_is_node_match:
 example: Lang (Hedge.Node Nat) := (node (fun x => x = 1) (Lang.or (node (fun x => x = 1) Lang.emptystr) Lang.emptyset))
 
 theorem null_iff_node {α: Type} {p: α → Bool} {children: Lang (Hedge.Node α)}:
-  Lang.null (node p children) <-> False :=
+  Lang.null (node p children) ↔ False :=
   Iff.intro nofun nofun
 
 theorem null_node {α: Type} {p: α → Bool} {children: Lang (Hedge.Node α)}:
@@ -59,8 +59,8 @@ theorem null_node {α: Type} {p: α → Bool} {children: Lang (Hedge.Node α)}:
   rw [null_iff_node]
 
 theorem derive_iff_node {α: Type} {p: α → Bool} {childlang: Lang (Hedge.Node α)} {label: α} {children: Hedge α} {xs: Hedge α}:
-  (Lang.derive (node p childlang) (Hedge.Node.node label children)) xs <->
-  (Lang.onlyif (p label /\ childlang children) Lang.emptystr) xs := by
+  (Lang.derive (node p childlang) (Hedge.Node.node label children)) xs ↔
+  (Lang.onlyif (p label ∧ childlang children) Lang.emptystr) xs := by
   simp only [Lang.derive]
   simp only [Lang.onlyif, Lang.emptystr]
   refine Iff.intro ?toFun ?invFun
@@ -82,6 +82,6 @@ theorem derive_iff_node {α: Type} {p: α → Bool} {childlang: Lang (Hedge.Node
 
 theorem derive_node {α: Type} {p: α → Bool} {childlang: Lang (Hedge.Node α)} {label: α} {children: Hedge α}:
   (Lang.derive (node p childlang) (Hedge.Node.node label children)) =
-  (Lang.onlyif (p label /\ childlang children) Lang.emptystr) := by
+  (Lang.onlyif (p label ∧ childlang children) Lang.emptystr) := by
   funext
   rw [derive_iff_node]

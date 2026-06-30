@@ -56,34 +56,34 @@ theorem replaceLE_take (r: RegexID n) (xs: Vector σ (n + l)):
     omega
   | or r1 r2 ih1 ih2 =>
     simp only [replaceLE, Regex.or.injEq]
-    rw [<- ih1]
-    rw [<- ih2]
+    rw [← ih1]
+    rw [← ih2]
     apply And.intro rfl rfl
   | concat r1 r2 ih1 ih2 =>
     simp only [replaceLE, Regex.concat.injEq]
-    rw [<- ih1]
-    rw [<- ih2]
+    rw [← ih1]
+    rw [← ih2]
     apply And.intro rfl rfl
   | star r1 ih1 =>
     simp only [replaceLE]
-    rw [<- ih1]
+    rw [← ih1]
   | interleave r1 r2 ih1 ih2 =>
     simp only [replaceLE, Regex.interleave.injEq]
-    rw [<- ih1]
-    rw [<- ih2]
+    rw [← ih1]
+    rw [← ih2]
     apply And.intro rfl rfl
   | and r1 r2 ih1 ih2 =>
     simp only [replaceLE, Regex.and.injEq]
-    rw [<- ih1]
-    rw [<- ih2]
+    rw [← ih1]
+    rw [← ih2]
     apply And.intro rfl rfl
   | compliment r1 ih1 =>
     simp only [replaceLE]
-    rw [<- ih1]
+    rw [← ih1]
   | xor r1 r2 ih1 ih2 =>
     simp only [replaceLE, Regex.xor.injEq]
-    rw [<- ih1]
-    rw [<- ih2]
+    rw [← ih1]
+    rw [← ih2]
     apply And.intro rfl rfl
 
 theorem replaceLE_regexid_add (r: RegexID n) (xs: Vector σ (n + l)):

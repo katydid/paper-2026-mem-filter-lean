@@ -331,10 +331,10 @@ theorem derives_commutes (G: Grammar n φ) (Φ: φ → α → Prop) [DecidableRe
     exact ih'
 
 -- Using theorem derive_commutes we can prove validate_commutes.
-theorem validate_commutes (G: Grammar n φ) Φ [DecidableRel Φ] (nodes: Hedge α):
-  (validate G (decideRel Φ) nodes = true) = Grammar.denote G Φ nodes := by
+theorem validate_commutes (G: Grammar n φ) Φ [DecidableRel Φ] (h: Hedge α):
+  (validate G (decideRel Φ) h = true) = Grammar.denote G Φ h := by
   unfold Grammar.denote
-  rw [← Lang.validate (Grammar.Rule.denote G Φ G.start) nodes]
+  rw [← Lang.validate (Grammar.Rule.denote G Φ G.start) h]
   unfold validate
   rw [← derives_commutes]
   rw [← Grammar.null_commutes]

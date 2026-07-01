@@ -20,7 +20,7 @@ def Regex.Char.derive (r: Regex Char) (a: Char): Regex Char :=
   | compliment r1 => compliment (derive r1 a)
   | xor r1 r2 => xor (derive r1 a) (derive r2 a)
 
-theorem gen_derive: Regex.Char.derive r a = Regex.derive (fun s a => s == a) r a := by
+theorem genderive: Regex.Char.derive r a = Regex.derive (fun s a => s == a) r a := by
   induction r with
   | emptyset => rfl
   | emptystr => rfl

@@ -28,8 +28,6 @@ open Token
 -- is parsed as: `{"object": {"a": {"array": {0: "b", 1: "c"}}}}`.
 
 example : Hedge Token :=
-  [node (tag "object") [
-    node (string "a") [
-      node (tag "array") [
-        node (int64 0) [node (string "b") []],
-        node (int64 1) [node (string "c") []]]]]]
+[node (tag "object") [node (string "a") [node (tag "array") [
+  node (int64 0) [node (string "b") []],
+  node (int64 1) [node (string "c") []]]]]]

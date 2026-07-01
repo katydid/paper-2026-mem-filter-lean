@@ -137,8 +137,7 @@ private def example_grammar_doc: Grammar 3 String :=
     (prods := #v[
       Regex.oneOrMore (Regex.symbol ("para", 1)),
       Regex.symbol ("pcdata", 2),
-      Regex.emptystr,
-    ])
+      Regex.emptystr])
 
 #guard validate example_grammar_doc (· == ·)
   [node "doc" [node "para" [node "pcdata" []]]]

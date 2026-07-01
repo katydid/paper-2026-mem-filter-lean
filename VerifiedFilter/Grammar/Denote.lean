@@ -199,28 +199,28 @@ theorem decreasing_xor_r {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (xs
 -- Lang.or, Lang.concat and Lang.star are unfolded to help with the termination proof.
 -- Φ needs to be the last parameter, so that simp only works on this function when the parameter r is provided.
 def Rule.denote (G: Grammar n φ) (Φ: φ → α → Prop)
-  (r: Regex (φ × Ref n)) (nodes: Hedge α): Prop := match r with
+  (r: Regex (φ × Ref n)) (h: Hedge α): Prop := match r with
   | Regex.emptyset => False
-  | Regex.emptystr => nodes = []
-  | Regex.symbol (pred, ref) => match nodes with
-    | [node] => (Φ pred node.getLabel)
-                 ∧ denote G Φ (G.lookup ref) node.getChildren
+  | Regex.emptystr => h = []
+  | Regex.symbol (pred, ref) => match h with
+    | [hnode] => (Φ pred hnode.getLabel)
+                 ∧ denote G Φ (G.lookup ref) hnode.getChildren
     | _ => False
-  | Regex.or r1 r2 => (denote G Φ r1 nodes) ∨ (denote G Φ r2 nodes)
-  | Regex.concat r1 r2 => ∃ (i: Fin (nodes.length + 1)),
-      (denote G Φ r1 (List.take i nodes)) ∧ (denote G Φ r2 (List.drop i nodes))
-  | Regex.star r1 => match nodes with
+  | Regex.or r1 r2 => (denote G Φ r1 h) ∨ (denote G Φ r2 h)
+  | Regex.concat r1 r2 => ∃ (i: Fin (h.length + 1)),
+      (denote G Φ r1 (List.take i h)) ∧ (denote G Φ r2 (List.drop i h))
+  | Regex.star r1 => match h with
     | [] => True
-    | (node::nodes') => ∃ (i: Fin nodes.length),
-                        (denote G Φ r1 (node::List.take i nodes'))
-                        ∧ (denote G Φ (Regex.star r1) (List.drop i nodes'))
-  | Regex.interleave r1 r2 => ∃ (i: Fin (List.interleaves nodes).length),
-        (denote G Φ r1 (List.get (List.interleaves nodes) i).1)
-      ∧ (denote G Φ r2 (List.get (List.interleaves nodes) i).2)
-  | Regex.and r1 r2 => (denote G Φ r1 nodes) ∧ (denote G Φ r2 nodes)
-  | Regex.compliment r1 => Not (denote G Φ r1 nodes)
-  | Regex.xor r1 r2 => ((denote G Φ r1 nodes) ∨ (denote G Φ r2 nodes)) ∧ (Not ((denote G Φ r1 nodes) ∧ (denote G Φ r2 nodes)))
-  termination_by (nodes, r)
+    | (hnode::h') => ∃ (i: Fin h.length),
+                        (denote G Φ r1 (hnode::List.take i h'))
+                        ∧ (denote G Φ (Regex.star r1) (List.drop i h'))
+  | Regex.interleave r1 r2 => ∃ (i: Fin (List.interleaves h).length),
+        (denote G Φ r1 (List.get (List.interleaves h) i).1)
+      ∧ (denote G Φ r2 (List.get (List.interleaves h) i).2)
+  | Regex.and r1 r2 => (denote G Φ r1 h) ∧ (denote G Φ r2 h)
+  | Regex.compliment r1 => Not (denote G Φ r1 h)
+  | Regex.xor r1 r2 => ((denote G Φ r1 h) ∨ (denote G Φ r2 h)) ∧ (Not ((denote G Φ r1 h) ∧ (denote G Φ r2 h)))
+  termination_by (h, r)
   decreasing_by
     · apply decreasing_symbol
     · apply decreasing_or_l
@@ -392,7 +392,7 @@ theorem denote_xor {α: Type} {φ: Type} (G: Grammar n φ) (Φ: φ → α → Pr
   funext
   simp only [Rule.denote, Lang.xor]
 
-theorem null_commutes (G: Grammar n φ) (Φ: φ → α → Prop) [DecidableRel Φ] r:
+theorem null_commutes (G: Grammar n φ) (Φ: φ -> α -> Prop) [DecidableRel Φ] r:
   ((Regex.null r) = true) = Lang.null (Rule.denote G Φ r) := by
   induction r with
   | emptyset =>
@@ -492,5 +492,5 @@ theorem denote_nil_is_null (Φ: φ → α → Prop) [DecidableRel Φ]:
 end Grammar
 
 -- We specify the semantics of a Grammar as the denotation of the start rule.
-def Grammar.denote (G: Grammar n φ) (Φ: φ → α → Prop) (nodes: Hedge α): Prop :=
-  Rule.denote G Φ G.start nodes
+def Grammar.denote (G: Grammar n φ) (Φ: φ → α → Prop) (h: Hedge α): Prop :=
+  Rule.denote G Φ G.start h

@@ -43,14 +43,16 @@ def example_untagged_grammar_blogpost : Grammar 5 Pred := Grammar.mk
 
 -- Given how we parse JSON using a pull-based parser, we have to add tags, so it is translated to:
 
+open Pred
+
 def example_translated_jsonschema : Grammar 7 Pred := Grammar.mk
-  (start := (symbol (Pred.tagEq "object", 4)))
-  (prods := #v[emptystr, starAny, symbol (Pred.string, 0), symbol (Pred.email, 0)
-    , (interleave (symbol (Pred.strEq "content", 2))
-                  (optional (symbol (Pred.strEq "author", 5))))
-    , (symbol (Pred.tagEq "object", 6))
-    , (interleave (symbol (Pred.strEq "username", 2))
-                  (optional (symbol (Pred.strEq "email", 3))))])
+  (start := (symbol (tagEq "object", 4)))
+  (prods := #v[emptystr, starAny, symbol (string, 0), symbol (email, 0)
+    , (interleave (symbol (strEq "content", 2))
+                  (optional (symbol (strEq "author", 5))))
+    , (symbol (tagEq "object", 6))
+    , (interleave (symbol (strEq "username", 2))
+                  (optional (symbol (strEq "email", 3))))])
 
 def example_additional_properties :=
-  star (symbol (Pred.not (Pred.or (Pred.strEq "content") (Pred.strEq "author")), 1))
+  star (symbol (not (or (strEq "content") (strEq "author")), 1))

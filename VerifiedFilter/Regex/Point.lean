@@ -6,7 +6,7 @@ import VerifiedFilter.Regex.Regex
 import VerifiedFilter.Regex.Map
 
 -- first returns a regular expression, where all symbols contain a tuple have been replaced with a symbol containing the first element of the tuple.
-def Regex.Point.first (r: Regex (α × β)): Regex α := Regex.map r (fun (s,_) => s)
+def Regex.Point.first (r: Regex (α × β)): Regex α := r.map (fun (s,_) => s)
 
 -- Point.derive is the same as Regex.derive, except the answer to the predicate is already included in a tuple with the original symbol.
 def Regex.Point.derive: (r: Regex (σ × Bool)) → Regex σ

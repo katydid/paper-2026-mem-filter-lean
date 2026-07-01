@@ -792,7 +792,8 @@ def atts: List AttributeNode := []
 def children: List ChildNode := [ChildNode.ElementNode qn cx atts []]
 def childNode := ChildNode.ElementNode qn cx atts children
 
-def g := Grammar.mk (concat (symbol ("<head>", 0)) (symbol ("<body>", 0))) #v[optional (symbol ("<div>", 0))]
+def g := Grammar.mk (concat (symbol ("<head>", 0)) (symbol ("<body>", 0)))
+  #v[optional (symbol ("<div>", 0))]
 def p0 := g.lookup 0
 -- continue recursively where the previous example left off
 def p: Pattern 1 := g.start
